@@ -17,8 +17,6 @@ import seqNumGen from "../app/util/sequentialNumberGenerator";
 
 export default class Builder {
   constructor() {
-    console.log("!!!CONS");
-
     this.name = "builder";
     this.model = {
       coreInputs: []
