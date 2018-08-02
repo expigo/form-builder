@@ -1,75 +1,49 @@
-import CoreInput from "../app/model/CoreInput";
-import seqNumGen from "../app/util/sequentialNumberGenerator";
-
-// const coreInputTemplate = coreInput => {
-//   return `
-//     <div class="halko" data-id="${coreInput.id}">
-//         Q: ${coreInput.question} ||  T: ${coreInput.type} ID:${
-//     coreInput.serialNumber
-//   }
-//         <label for="question${coreInput.serialNumber}">Question: </label>
-//         <input type="text" name="question${
-//           coreInput.serialNumber
-//         }" placeholder="Enter the question..." value="${coreInput.question}"/>
-//     </div>
-// `;
-// };
+import Inputs from "../app/model/Inputs";
+import { checkIfInput, getInputValues } from "../app/util/util";
 
 export default class Builder {
   constructor() {
-    console.log("!!!CONS");
-
     this.name = "builder";
     this.model = {
-      coreInputs: []
+      coreInputs: new Inputs()
     };
 
     window.addEventListener("DOMContentLoaded", e => {
-      this.readState();
+      this.getState();
     });
 
-    // for keeping score of the no of core inputs
-    this.nextNumber = seqNumGen();
-
-    // handle adding new core question
+    // handle adding new core question with 'add' btn
     document.querySelector(".app").addEventListener("click", e => {
       const btn = e.target.closest(".btn--add");
       if (btn) {
-        console.log(e);
-        const serialNumber = this.nextNumber.next().value;
-        const newCoreInput = new CoreInput(serialNumber);
-        this.model.coreInputs.push(newCoreInput); // WHY THE TRAP IS NOT TRIGGERED!?11? /* 29.07: it is finally being triggered 🤪🙃  */
-
-        const elemele = document.querySelector(`div[data-id="${newCoreInput.id}"] input`);
-
-        console.log(elemele);
-        elemele.addEventListener('keyup', (e) => {
-          console.log(this);
-        });
-
-
-        this.saveState();
+        this.handleAddInput(e);
+        this.setState();
       }
+    });
 
-      // const read = e.target.closest(".btn-read");
-      // if (read) {
-      //   this.readState();
-      // }
+    document.querySelector(".app").addEventListener("focusout", e => {
+      console.log("TRIGGERED 😡😡😡");
 
-      // if i wanted to listen for the event in the component, i would have to change the way new coreInputs are stored (or at least seems like a good idea ✌✌):
-      // const newCoreInput = new CoreInput();
-      // this.model.coreInputs[newCoreInput.id] = newCoreInput;
-      //  and this would affect storing to and retrieving model from the localStorage
-      // --------------
-      // FEW HOURS LATER: giving it another try 🙆‍♀️🙆‍♀️🙆‍♀️
-      // const elemele = e.target.closest(`div[data-id="${newCoreInput.id}"] input`);
-      // console.log(elemele);
-      // if (elemele) {
-      //   elemele.value = this.question;
-      //   this.question = elemele.value;
-      // }
-      console.log(this);
-      console.log(e);
+      if (checkIfInput(e)) {
+        const questionId = e.target.closest("div").dataset.id;
+        console.log(getInputValues(e.target.parentNode.children));
+
+        const questionToUpdate = this.model.coreInputs.getInputById(questionId);
+        const questionIndex = this.model.coreInputs.state.findIndex(
+          qta => qta.id === questionToUpdate.id
+        );
+
+        const [updatedQuestion, updatedType] = getInputValues(
+          e.target.parentNode.children
+        );
+
+        questionToUpdate.question = updatedQuestion;
+        questionToUpdate.type = updatedType;
+
+        this.model.coreInputs.state[questionIndex] = questionToUpdate;
+
+        this.setState();
+      }
     });
   }
 
@@ -80,15 +54,27 @@ export default class Builder {
       coreInput.serialNumber
     }
           <label for="question${coreInput.serialNumber}">Question: </label>
-          <input type="text" name="question${
+          <input required type="text" name="question${
             coreInput.serialNumber
-          }" placeholder="Enter the question..." value="${coreInput.question || ''}"/>
+          }" placeholder="Enter the question..." value="${coreInput.question ||
+      ""}"/>
+          <select name="type${coreInput.serialNumber || ""}">
+            <option value="input" ${
+              coreInput.type === "input" ? "selected" : ""
+            }>Text</option>
+            <option value="select" ${
+              coreInput.type === "select" ? "selected" : ""
+            }>Yes/No</option>
+            <option value="number" ${
+              coreInput.type === "number" ? "selected" : ""
+            }>Number</option>
+          </select>
       </div>
   `;
   }
 
   getInputs() {
-    const inputsHTML = this.model.coreInputs.reduce(
+    const inputsHTML = this.model.coreInputs.state.reduce(
       (markup, input) => markup + `<li>${this.coreInputTemplate(input)}</li>`,
       ""
     );
@@ -96,40 +82,50 @@ export default class Builder {
     return `<ul>${inputsHTML}</ul>`;
   }
 
-  saveState() {
-    localStorage.setItem("form-builder", JSON.stringify(this.model.coreInputs));
+  handleAddInput(e, inputToAdd = {}) {
+    // console.log(e);
+
+    const { question, type, id, sn } = inputToAdd;
+
+    const newCoreInput = this.model.coreInputs.addCoreInput(question, type, id, sn);
+
   }
 
-  readState() {
+  // a method for persisting the stored data in localStorage
+  setState() {
+    localStorage.setItem(
+      "form-builder",
+      JSON.stringify(this.model.coreInputs.state)
+    );
+  }
+
+  getState() {
     const state = JSON.parse(localStorage.getItem("form-builder"));
 
-    console.log(this.model.coreInputs);
-
-    console.log(state);
     if (state) {
       state.forEach(element => {
-        this.model.coreInputs.push(element);
+        // const newCoreInput = this.model.coreInputs.addCoreInput(q, t, id, sn);
+        const newCoreInput = this.handleAddInput(null, element);
       });
 
-      this.nextNumber = seqNumGen(state.length + 1);
+      // this.nextSerialNumber = this.model.coreInputs.setNextGenValue(6634);
     }
   }
 
+  // component's view
   render(modelParam) {
     return `
         <div class="builder">
             ${this.getInputs()}
         </div>
         <button class="btn--add">&#43;</button>
-        <button class="btn-read">read</button>
         `;
   }
-
+  // component's controller
   controller(model) {
     // shitload of work to do... (order irrelevant)
     // determine the input being created/changed
     // create a new question based on the data provided ()
-    console.log("helo from kontroller");
     this.model.coreInputs = model.coreInputs;
   }
 }

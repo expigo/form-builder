@@ -1,4 +1,4 @@
-import seqNumGen from '../util/sequentialNumberGenerator'
+import {seqNumGen} from '../util/util'
 import uuidv1 from 'uuid/v1'
 
 export default class Input {

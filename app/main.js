@@ -5,12 +5,12 @@ import App from './lib/app';
 import Router from './lib/router';
 
 import Builder from '../components/Builder'
-import CoreInput from "./model/CoreInput";
+
 
 // [1, 2, 3].map(el => console.log(el));
-const arr = [1, 2, 3];
-const iAmJavascriptES6 = () => console.log(...arr);
-window.iAmJavascriptES6 = iAmJavascriptES6;
+// const arr = [1, 2, 3];
+// const iAmJavascriptES6 = () => console.log(...arr);
+// window.iAmJavascriptES6 = iAmJavascriptES6;
 
 const app = new App('.app');
 

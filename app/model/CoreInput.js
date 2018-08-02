@@ -1,4 +1,4 @@
-import seqNumGen from "../util/sequentialNumberGenerator";
+import {seqNumGen} from "../util/util";
 import Input from "./Input";
 import SubInput from "./SubInput";
 

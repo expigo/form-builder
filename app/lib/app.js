@@ -1,4 +1,5 @@
 import CoreInput from "../model/CoreInput";
+import Inputs from "../model/Inputs";
 
 export default class App {
   constructor(selector) {
@@ -10,22 +11,14 @@ export default class App {
   }
 
   addComponent(component) {
-
-    console.log('>> nah just adding a component');
+    console.log(">> nah just adding a component");
     this.componentByName[component.name] = component;
 
-    if(component.model.coreInputs){
-      component.model.coreInputs = this.proxify(component.model.coreInputs);
+    if (component.model.coreInputs) {
+      component.model.coreInputs.state = this.proxify(
+        component.model.coreInputs.state
+      );
     }
-
-    // this.appLocationElement.addEventListener("click", (e) => {
-    //   const btn = e.target.closest(".btn");
-    //   if (btn) {
-
-    //     component.model.coreInputs.push(new CoreInput()); // WHY THE TRAP IS NOT TRIGGERED!?11? /* 29.07: it finally is triggered 🤪🙃  */
-    //     // this.updateView();
-    //   }
-    // });
   }
 
   renderComponent(name) {
@@ -49,32 +42,19 @@ export default class App {
     }
   }
 
-  proxify(model){
+  proxify(model) {
     const self = this;
     return new Proxy(model, {
       set(target, prop, value) {
         console.log(
-          `[SET]target: ${JSON.stringify(target)}\n prop: ${prop}\n value:${JSON.stringify(value)}`
+          `[SET]target: ${JSON.stringify(
+            target
+          )}\n prop: ${prop}\n value:${JSON.stringify(value)}`
         );
-        target[prop] = value || [];
-
-        // const val = target[prop];
-        // console.log(typeof val);
-        // if (typeof val === 'function') {
-        //     if (['push', 'unshift'].includes(prop)) {
-        //           console.log('pushing ya babe!')
-        //     }
-        //   }
-
+        target[prop] = value || new Inputs();
         self.updateView();
         return true;
       }
-      // ,
-      //  get(target, prop) {
-      //   console.log(
-      //     `[GET]target: ${JSON.stringify(target)}\n prop: ${prop}\n`
-      //   );
-      //  }
     });
-  };
+  }
 }
