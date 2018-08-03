@@ -1,0 +1,11 @@
+.builder {
+    // background: rgb(197, 162, 197);
+    min-width: 75rem;
+    display: flex;
+    justify-content: center;
+
+
+    & > ul {
+        list-style: none;
+    }
+}

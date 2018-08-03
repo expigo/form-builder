@@ -1,0 +1,19 @@
+.input {
+    min-height: 10rem;
+    width: 40rem;
+    padding: 3rem;
+    margin: 1rem;
+    font-size: 2rem;
+    border: 1px inset rebeccapurple;
+
+    & input {
+        height: 3rem;
+    }
+
+    & select {
+        background: thistle;
+        appearance: none;
+    }
+
+
+}

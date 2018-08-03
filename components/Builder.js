@@ -1,3 +1,5 @@
+import _ from "lodash";
+
 import Inputs from "../app/model/Inputs";
 import { checkIfInput, getInputValues } from "../app/util/util";
 
@@ -14,51 +16,82 @@ export default class Builder {
 
     // handle adding new core question with 'add' btn
     document.querySelector(".app").addEventListener("click", e => {
-      const btn = e.target.closest(".btn--add");
-      if (btn) {
+      const btnAdd = e.target.matches(".btn--add");
+      if (btnAdd) {
         this.handleAddInput(e);
-        this.setState();
+        this.persistState();
+      }
+
+      const btnRemove = e.target.matches('.btn--remove');
+      if(btnRemove) {
+        const inputId = e.target.closest("div").dataset.id;
+        console.log(inputId);
+        this.handleRemoveCoreInput(inputId);
       }
     });
 
-    document.querySelector(".app").addEventListener("focusout", e => {
+    // ideas for making this better for UX:
+    // - handling two different events separately: one for input (eg. focusout), one for select tag (like input) (caveat: the number of event handlers will grow with the new inputs type) ❌
+    // - try different events, and select one that fits the best ❌
+    // throttle the function invocation ✔
+
+    this.handle = e => {
       console.log("TRIGGERED 😡😡😡");
 
       if (checkIfInput(e)) {
+        // get the id id of the input to update
         const questionId = e.target.closest("div").dataset.id;
-        console.log(getInputValues(e.target.parentNode.children));
 
-        const questionToUpdate = this.model.coreInputs.getInputById(questionId);
-        const questionIndex = this.model.coreInputs.state.findIndex(
-          qta => qta.id === questionToUpdate.id
+        // const inputToUpdate = this.model.coreInputs.getInputById(questionId);
+        // const inputIndex = this.model.coreInputs.state.findIndex(
+        //   qta => qta.id === inputToUpdate.id
+        // );
+
+        // get the actual input to update along its index in the state
+        const { input, index } = this.model.coreInputs.getInputWithIndexById(
+          questionId
         );
 
-        const [updatedQuestion, updatedType] = getInputValues(
+        // get values from the inputs on the page
+        const [updatedInput, updatedType] = getInputValues(
           e.target.parentNode.children
         );
 
-        questionToUpdate.question = updatedQuestion;
-        questionToUpdate.type = updatedType;
+        // assign new values
+        input.question = updatedInput;
+        input.type = updatedType;
 
-        this.model.coreInputs.state[questionIndex] = questionToUpdate;
+        // update the state
+        this.model.coreInputs.state[index] = input;
 
-        this.setState();
+        this.persistState();
+
+        // you know, just tryin'
+        // i guess it would be better to reassign the whole state
+        // TODO when i find out why the shallow copy w/ spread operator is not working ✌
+
+        // let actualState = { ...this.model}; //👈👈
       }
-    });
+    };
+
+    document
+      .querySelector(".app")
+      .addEventListener("input", _.debounce(this.handle, 500));
   }
 
   coreInputTemplate(coreInput) {
     return `
-      <div class="halko" data-id="${coreInput.id}">
+      <div class="input input--core" data-id="${coreInput.id}">
           Q: ${coreInput.question} ||  T: ${coreInput.type} ID:${
       coreInput.serialNumber
     }
           <label for="question${coreInput.serialNumber}">Question: </label>
-          <input required type="text" name="question${
+          <input class="input__question" type="text" name="question${
             coreInput.serialNumber
           }" placeholder="Enter the question..." value="${coreInput.question ||
       ""}"/>
-          <select name="type${coreInput.serialNumber || ""}">
+          <select class="input__select" name="type${coreInput.serialNumber ||
+            ""}">
             <option value="input" ${
               coreInput.type === "input" ? "selected" : ""
             }>Text</option>
@@ -69,6 +102,7 @@ export default class Builder {
               coreInput.type === "number" ? "selected" : ""
             }>Number</option>
           </select>
+        <button class="btn btn--remove">&times;</button>
       </div>
   `;
   }
@@ -83,16 +117,25 @@ export default class Builder {
   }
 
   handleAddInput(e, inputToAdd = {}) {
-    // console.log(e);
+    debugger;
+    const { question, type, id, serialNumber } = inputToAdd;
 
-    const { question, type, id, sn } = inputToAdd;
+    const newCoreInput = this.model.coreInputs.addCoreInput(
+      question,
+      type,
+      id,
+      serialNumber
+    );
+  };
 
-    const newCoreInput = this.model.coreInputs.addCoreInput(question, type, id, sn);
-
+  handleRemoveCoreInput(id) {
+    this.model.coreInputs.deleteCoreInput(id);
   }
 
   // a method for persisting the stored data in localStorage
-  setState() {
+  persistState() {
+    debugger;
+    console.log("$$setting state");
     localStorage.setItem(
       "form-builder",
       JSON.stringify(this.model.coreInputs.state)
@@ -100,6 +143,7 @@ export default class Builder {
   }
 
   getState() {
+    debugger;
     const state = JSON.parse(localStorage.getItem("form-builder"));
 
     if (state) {
@@ -108,7 +152,7 @@ export default class Builder {
         const newCoreInput = this.handleAddInput(null, element);
       });
 
-      // this.nextSerialNumber = this.model.coreInputs.setNextGenValue(6634);
+      this.nextSerialNumber = this.model.coreInputs.setNextGenValue(6634);
     }
   }
 
@@ -117,8 +161,8 @@ export default class Builder {
     return `
         <div class="builder">
             ${this.getInputs()}
+            <button class="btn--add">&#43;</button>
         </div>
-        <button class="btn--add">&#43;</button>
         `;
   }
   // component's controller
