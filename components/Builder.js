@@ -18,6 +18,7 @@ export default class Builder {
     document.querySelector(".app").addEventListener("click", e => {
       const btnAdd = e.target.matches(".btn--add");
       if (btnAdd) {
+        debugger;
         this.handleAddInput();
         this.persistState();
       }
@@ -44,39 +45,40 @@ export default class Builder {
     const handleInputChange = e => {
       console.log("TRIGGERED 😡😡😡");
 
+
       if (checkIfInput(e)) {
-        // get the id id of the input to update
+        // copy the actual state of state
+        let actualState = this.model.coreInputs.state; //👈👈
+ 
+        // get the id id of the input to updatse
         const questionId = e.target.closest("div").dataset.id;
-
-        // const inputToUpdate = this.model.coreInputs.getInputById(questionId);
-        // const inputIndex = this.model.coreInputs.state.findIndex(
-        //   qta => qta.id === inputToUpdate.id
-        // );
-
+ 
         // get the actual input to update along its index in the state
         const { input, index } = this.model.coreInputs.getInputWithIndexById(
           questionId
         );
-
+ 
         // get values from the inputs on the page
         const [updatedInput, updatedType] = getInputValues(
           e.target.parentNode.children
         );
-
+ 
         // assign new values
         input.question = updatedInput;
         input.type = updatedType;
-
+ 
         // update the state
-        this.model.coreInputs.state[index] = input;
-
+        debugger;
+        actualState[index] = input;     // does not trigger a proxy set trap
+       // Two versions:
+       // 1. setState() commented => no real-time view/state update => data taken from localStorage every time
+       // 1. setState() uncommented => real-time view/state update => view rerender every state change
+        this.setState(actualState);
+ 
         this.persistState();
-
-        // you know, just tryin'
-        // i guess it would be better to reassign the whole state
-        // TODO when i find out why the shallow copy w/ spread operator is not working ✌
-        // let actualState = { ...this.model}; //👈👈
       }
+
+
     };
 
     document
@@ -85,6 +87,10 @@ export default class Builder {
   }
 
   coreInputTemplate(coreInput) {
+    console.log(`@@@ ${JSON.stringify(coreInput)}`);
+    console.log(coreInput.subInputs);
+    this.getSubInputs(coreInput.subInputs);
+
     return `
       <div class="input input--core" data-id="${coreInput.id}">
           <!-- Q: ${coreInput.question} ||  T: ${coreInput.type} ID:${
@@ -118,12 +124,12 @@ export default class Builder {
   subInputTemplate(subInput) {
     return `
       <div class="input input--sub" >
-
+            ${subInput.question}
       </div>
     `;
   }
 
-  getInputs() {
+  getCoreInputs() {
     const inputsHTML = this.model.coreInputs.state.reduce(
       (markup, input) => markup + `<li>${this.coreInputTemplate(input)}</li>`,
       ""
@@ -132,7 +138,20 @@ export default class Builder {
     return `<ul>${inputsHTML}</ul>`;
   }
 
+  getSubInputs(parentInput) {
+    console.log("here i am");
+    // if there are subInputs for parent, get'em all!
+    while (parentInput.subInputs) {
+      this.getSubInputs(parentInput.subInputs);
+    }
+
+    parentInput;
+  }
+
   handleAddInput(inputToAdd = {}) {
+    // copy the actual state of state
+    let actualState = this.model.coreInputs.state; //👈👈
+    // create new core input
     const { question, type, id, serialNumber } = inputToAdd;
 
     const newCoreInput = this.model.coreInputs.addCoreInput(
@@ -141,21 +160,37 @@ export default class Builder {
       id,
       serialNumber
     );
+
+    actualState.push(newCoreInput);
+
+    this.setState(actualState);
+
+
   }
 
   handleAddSubInput(e) {
     // 1. get parent input
     const parent = e.target.closest("div");
     // 2. if parent != core -> get core
-    const coreInput = e.target.closest(".input--core");
+    const coreInputId = e.target.closest(".input--core").dataset.id;
 
-    console.log(parent, coreInput);
+    this.model.coreInputs.addSubInput(coreInputId);
+
+    this.persistState();
 
     // 3. update state
   }
 
-  handleRemoveCoreInput(id) {
-    this.model.coreInputs.deleteCoreInput(id);
+  handleRemoveCoreInput(idToDelete) {
+    // this.model.coreInputs.deleteCoreInput(id);
+
+    let actualState = this.model.coreInputs.state; //👈👈
+
+    const index = this.model.coreInputs.getIndexById(idToDelete);
+    const deletedInput = actualState.splice(index, 1);
+
+    this.setState(actualState);
+
     this.persistState();
   }
 
@@ -169,26 +204,38 @@ export default class Builder {
   }
 
   getState() {
+    debugger;
     const state = JSON.parse(localStorage.getItem("form-builder"));
+    console.log(state);
 
     if (state) {
-      state.forEach(element => {
-        // const newCoreInput = this.model.coreInputs.addCoreInput(q, t, id, sn);
-        const newCoreInput = this.handleAddInput(element);
-      });
+      // state.forEach(element => {
+      //   // const newCoreInput = this.model.coreInputs.addCoreInput(q, t, id, sn);
+      //   const newCoreInput = this.handleAddInput(element);
+      // });
 
-      this.nextSerialNumber = this.model.coreInputs.setNextGenValue(
-        this.model.coreInputs.getHighestId() + 1
-      );
+      // this.nextSerialNumber = this.model.coreInputs.setNextGenValue(
+      //   this.model.coreInputs.getHighestId() + 1
+      // );
+
+      this.setState(state);
     }
   }
 
+  setState(state) {
+    debugger;
+    const newState = new Inputs();
+    newState.setState(state);
+    this.model.coreInputs = newState;
+  }
+
   // component's view
+  // make it return a promise!
   render(modelParam) {
     const builderHTML = `
     <div class="builder">
       <div class="builder__inputs">
-        ${this.getInputs()}
+        ${this.getCoreInputs()}
         </div>
         <button class="btn--add">&#43;</button
     </div>

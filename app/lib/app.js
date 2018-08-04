@@ -15,8 +15,8 @@ export default class App {
     this.componentByName[component.name] = component;
 
     if (component.model.coreInputs) {
-      component.model.coreInputs.state = this.proxify(
-        component.model.coreInputs.state
+      component.model = this.proxify(
+        component.model
       );
     }
   }
@@ -55,6 +55,13 @@ export default class App {
         // when pushing obj to the array, first the set trap is being triggered with prop === nextElInTheArray
         // and then the trap is triggered for the second time with prop === 'length'
         // fun fact: at first pass, the value of the length prop of the target remains 0, which causes the reduce, map etc function to ot trigger, hence nothing is rendered on the page XD
+        debugger;
+        
+        console.log(
+          `[SET]target: ${JSON.stringify(
+            target
+          )}\n prop: ${prop}\n value:${JSON.stringify(value)}`
+        );
         if(prop === 'length'){    
           console.log(
             `[SET]target: ${JSON.stringify(
