@@ -130,6 +130,7 @@ export default class Builder {
 
   handleRemoveCoreInput(id) {
     this.model.coreInputs.deleteCoreInput(id);
+    this.persistState();
   }
 
   // a method for persisting the stored data in localStorage
@@ -152,7 +153,11 @@ export default class Builder {
         const newCoreInput = this.handleAddInput(null, element);
       });
 
-      this.nextSerialNumber = this.model.coreInputs.setNextGenValue(6634);
+      this.nextSerialNumber = this.model.coreInputs.setNextGenValue(this.model.coreInputs.getHighestId() + 1);
+
+      
+
+
     }
   }
 

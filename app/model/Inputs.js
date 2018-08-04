@@ -26,37 +26,10 @@ export default class Inputs {
     return coreInput;
   }
 
-
-
-
-  // a method for persisting the stored data in localStorage
-  persistState() {
-    localStorage.setItem("form-builder", JSON.stringify(this.state));
-  }
-
-  getState() {
-    const state = JSON.parse(localStorage.getItem("form-builder"));
-
-    console.log(typeof state);
-    if (state) {
-      console.log("retrieving inputs...");
-      state.forEach(element => {
-        // done one by one to trigger the proxy trap=>render on page
-        this.state.push(element);
-
-        // i suppose inserting to the state should be more consistent, but nah (at least for now, no additional logic is required so i'll leave it like it is)
-        // it would be nice if i could add the event listener to the newly cerated input form here (at least from the responsibilty point of view)
-        // but i gues it would increase the coupling between classes
-        // this.addCoreInput(...element);
-      });
-
-      this.nextSerialNumber = seqNumGen(state.length + 1);
-    }
-  }
-
   // set the nex value
   setNextGenValue(nextVal) {
-    this.nextSerialNumber.next(nextVal);
+    // this.nextSerialNumber.next(nextVal);
+    this.nextSerialNumber = seqNumGen(nextVal);
   }
 
   getInputById(id) {
@@ -64,25 +37,29 @@ export default class Inputs {
   }
 
   getIndexById(id) {
-      return this.state.findIndex(qta => qta.id === id)
+    return this.state.findIndex(qta => qta.id === id);
   }
 
   getInputWithIndexById(id) {
     return {
-        input: this.state.find(input => input.id === id),
-        index: this.getIndexById(id)
+      input: this.state.find(input => input.id === id),
+      index: this.getIndexById(id)
     };
   }
 
-  
   deleteCoreInput(idToDelete) {
     debugger;
     const index = this.getIndexById(idToDelete);
-    this.state.splice(index, 1);
+    const deletedInput = this.state.splice(index, 1);
     // delete this.state[index];
 
-    this.persistState();
+    return deletedInput;
+  }
 
-    // return this.getInputById(idToDelete);
-}
+  getHighestId() {
+      const  [sortedIds] = this.state.map(el => el.serialNumber).sort().reverse().slice();  // i suppose it is less performant than providing a comparator, but not much enough to make a significant difference
+      // or i could just take the el at last index, but i admire the functional approach 😎😁
+    // EDIT: but maybe... https://shamasis.net/2009/09/javascript-string-reversing-algorithm-performance/ 🤷‍♀️ 
+      return sortedIds;
+  }
 }
