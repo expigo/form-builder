@@ -51,11 +51,6 @@ export default class App {
     const self = this;
     return new Proxy(model, {
       set(target, prop, value) {
-        // this goes like this:
-        // when pushing obj to the array, first the set trap is being triggered with prop === nextElInTheArray
-        // and then the trap is triggered for the second time with prop === 'length'
-        // fun fact: at first pass, the value of the length prop of the target remains 0, which causes the reduce, map etc function to ot trigger, hence nothing is rendered on the page XD
-        debugger;
         
         console.log(
           `[SET]target: ${JSON.stringify(

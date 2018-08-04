@@ -13,83 +13,22 @@ export default class Builder {
     window.addEventListener("DOMContentLoaded", e => {
       this.getState();
     });
-
-    // handle adding new core question with 'add' btn
-    document.querySelector(".app").addEventListener("click", e => {
-      const btnAdd = e.target.matches(".btn--add");
-      if (btnAdd) {
-        debugger;
-        this.handleAddInput();
-        this.persistState();
-      }
-
-      const btnRemove = e.target.matches(".btn--remove");
-      if (btnRemove) {
-        const inputId = e.target.closest("div").dataset.id;
-        this.handleRemoveCoreInput(inputId);
-      }
-
-      const btnAddSub = e.target.matches(".btn--add-sub");
-      if (btnAddSub) {
-        const inputId = e.target.closest("div");
-        inputId.insertAdjacentHTML("afterend", `<div> haloooooo</div>`);
-        this.handleAddSubInput(e);
-      }
-    });
-
-    // ideas for making this better for UX:
-    // - handling two different events separately: one for input (eg. focusout), one for select tag (like input) (caveat: the number of event handlers will grow with the new inputs type) ❌
-    // - try different events, and select one that fits the best ❌
-    // throttle the function invocation ✔
-
-    const handleInputChange = e => {
-      console.log("TRIGGERED 😡😡😡");
-
-
-      if (checkIfInput(e)) {
-        // copy the actual state of state
-        let actualState = this.model.coreInputs.state; //👈👈
- 
-        // get the id id of the input to updatse
-        const questionId = e.target.closest("div").dataset.id;
- 
-        // get the actual input to update along its index in the state
-        const { input, index } = this.model.coreInputs.getInputWithIndexById(
-          questionId
-        );
- 
-        // get values from the inputs on the page
-        const [updatedInput, updatedType] = getInputValues(
-          e.target.parentNode.children
-        );
- 
-        // assign new values
-        input.question = updatedInput;
-        input.type = updatedType;
- 
-        // update the state
-        debugger;
-        actualState[index] = input;     // does not trigger a proxy set trap
-       // Two versions:
-       // 1. setState() commented => no real-time view/state update => data taken from localStorage every time
-       // 1. setState() uncommented => real-time view/state update => view rerender every state change
-        this.setState(actualState);
- 
-        this.persistState();
-      }
-
-
-    };
-
-    document
-      .querySelector(".app")
-      .addEventListener("input", _.debounce(handleInputChange, 500));
   }
 
   coreInputTemplate(coreInput) {
     console.log(`@@@ ${JSON.stringify(coreInput)}`);
     console.log(coreInput.subInputs);
-    this.getSubInputs(coreInput.subInputs);
+    let subInputs = '';
+    this.getSubInputs(coreInput.subInputs, (parent) => {
+      const subs = parent.reduce((result, sub) => result + `<li>${sub}</li>`, '');
+
+      subInputs = `<ul>${subs}</ul>`
+    });
+
+    
+
+    console.log(subInputs);
+    
 
     return `
       <div class="input input--core" data-id="${coreInput.id}">
@@ -115,8 +54,10 @@ export default class Builder {
               coreInput.type === "number" ? "selected" : ""
             }>Number</option>
           </select>
+          ${subInputs}
         <button class="btn btn--add-sub">Add Sub-Input</button>
         <button class="btn btn--remove">&times;</button>
+
       </div>
   `;
   }
@@ -138,14 +79,18 @@ export default class Builder {
     return `<ul>${inputsHTML}</ul>`;
   }
 
-  getSubInputs(parentInput) {
-    console.log("here i am");
-    // if there are subInputs for parent, get'em all!
-    while (parentInput.subInputs) {
-      this.getSubInputs(parentInput.subInputs);
-    }
+  getSubInputs(parentInput, callback) {
+    console.log("^^ getSubInput");
 
-    parentInput;
+    callback(parentInput);
+
+    // we need to go deeper!
+    parentInput = parentInput.subInputs;
+
+    // if there are subInputs for parent, get'em all!
+    while (parentInput) {
+      callback(parent, callback);
+    }
   }
 
   handleAddInput(inputToAdd = {}) {
@@ -164,8 +109,6 @@ export default class Builder {
     actualState.push(newCoreInput);
 
     this.setState(actualState);
-
-
   }
 
   handleAddSubInput(e) {
@@ -174,11 +117,19 @@ export default class Builder {
     // 2. if parent != core -> get core
     const coreInputId = e.target.closest(".input--core").dataset.id;
 
-    this.model.coreInputs.addSubInput(coreInputId);
+    const {coreInput, index} = this.model.coreInputs.addSubInput(coreInputId);
+
+    // 3. update state
+    let actualState = this.model.coreInputs.state; 
+
+    actualState[index] = coreInput;
+
+    this.setState(actualState);
 
     this.persistState();
 
-    // 3. update state
+
+
   }
 
   handleRemoveCoreInput(idToDelete) {
@@ -204,26 +155,14 @@ export default class Builder {
   }
 
   getState() {
-    debugger;
     const state = JSON.parse(localStorage.getItem("form-builder"));
-    console.log(state);
 
     if (state) {
-      // state.forEach(element => {
-      //   // const newCoreInput = this.model.coreInputs.addCoreInput(q, t, id, sn);
-      //   const newCoreInput = this.handleAddInput(element);
-      // });
-
-      // this.nextSerialNumber = this.model.coreInputs.setNextGenValue(
-      //   this.model.coreInputs.getHighestId() + 1
-      // );
-
       this.setState(state);
     }
   }
 
   setState(state) {
-    debugger;
     const newState = new Inputs();
     newState.setState(state);
     this.model.coreInputs = newState;
@@ -270,5 +209,70 @@ export default class Builder {
     // determine the input being created/changed
     // create a new question based on the data provided ()
     this.model.coreInputs = model.coreInputs;
+
+    // handle adding new core question with 'add' btn
+    document.querySelector(".app").addEventListener("click", e => {
+      const btnAdd = e.target.matches(".btn--add");
+      if (btnAdd) {
+        this.handleAddInput();
+        this.persistState();
+      }
+
+      const btnRemove = e.target.matches(".btn--remove");
+      if (btnRemove) {
+        const inputId = e.target.closest("div").dataset.id;
+        this.handleRemoveCoreInput(inputId);
+      }
+
+      const btnAddSub = e.target.matches(".btn--add-sub");
+      if (btnAddSub) {
+        // const inputId = e.target.closest("div");
+        // inputId.insertAdjacentHTML("afterend", `<div> haloooooo</div>`);
+        this.handleAddSubInput(e);
+      }
+    });
+
+    // ideas for making this better for UX:
+    // - handling two different events separately: one for input (eg. focusout), one for select tag (like input) (caveat: the number of event handlers will grow with the new inputs type) ❌
+    // - try different events, and select one that fits the best ❌
+    // throttle the function invocation ✔
+    const handleInputChange = e => {
+      console.log("TRIGGERED 😡😡😡");
+
+      if (checkIfInput(e)) {
+        // copy the actual state of state
+        let actualState = this.model.coreInputs.state; //👈👈
+
+        // get the id id of the input to updatse
+        const questionId = e.target.closest("div").dataset.id;
+
+        // get the actual input to update along its index in the state
+        const { coreInput, index } = this.model.coreInputs.getCoreInputWithIndexById(
+          questionId
+        );
+
+        // get values from the inputs on the page
+        const [updatedInput, updatedType] = getInputValues(
+          e.target.parentNode.children
+        );
+
+        // assign new values
+        coreInput.question = updatedInput;
+        input.type = updatedType;
+
+        // update the state
+        actualState[index] = input; // does not trigger a proxy set trap
+        // Two versions:
+        // 1. setState() commented => no real-time view/state update => data taken from localStorage every time
+        // 1. setState() uncommented => real-time view/state update => view rerender every state change
+        this.setState(actualState);
+
+        this.persistState();
+      }
+    };
+
+    document
+      .querySelector(".app")
+      .addEventListener("input", _.debounce(handleInputChange, 500));
   }
 }

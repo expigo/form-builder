@@ -34,7 +34,9 @@ export default class Inputs {
     type = "",
     subInputs = []
   ) {
-    const coreInput = this.getInputById(coreId);
+    const {coreInput, index} = this.getCoreInputWithIndexById(coreId);
+
+
     coreInput.subInputs.push({
       conditionType,
       conditionAnswear,
@@ -42,6 +44,12 @@ export default class Inputs {
       type,
       subInputs
     });
+
+    return {
+        coreInput,
+        index
+    };
+
   }
 
   // TODO: make it so it takes an obj with particular properties to update, like
@@ -49,7 +57,7 @@ export default class Inputs {
   //   setState({coreInputs, actualInput })
   setState(newState) {
     this.state = newState;
-    this.nextSerialNumber = this.getHighestId() + 1;
+    this.nextSerialNumber = this.getHighestId() + 1 || 1;
   }
 
   // set the nex value
@@ -67,9 +75,9 @@ export default class Inputs {
     return this.state.findIndex(qta => qta.id === id);
   }
 
-  getInputWithIndexById(id) {
+  getCoreInputWithIndexById(id) {
     return {
-      input: this.state.find(input => input.id === id),
+      coreInput: this.state.find(input => input.id === id),
       index: this.getIndexById(id)
     };
   }
@@ -88,8 +96,8 @@ export default class Inputs {
       .sort()
       .reverse()
       .slice(); // i suppose it is less performant than providing a comparator, but not much enough to make a significant difference
-    // or i could just take the el at last index, but i admire the functional approach 😎😁
-    // EDIT: but maybe... https://shamasis.net/2009/09/javascript-string-reversing-algorithm-performance/ 🤷‍♀️
+    // or maybe i could just take the el at last index, but i admire the functional approach 😎😁
+    // EDIT: well... TODO https://shamasis.net/2009/09/javascript-string-reversing-algorithm-performance/ 🤷‍♀️
     return sortedIds;
   }
 }
