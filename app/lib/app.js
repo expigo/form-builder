@@ -33,6 +33,7 @@ export default class App {
   }
 
   updateView() {
+    console.log('updating view...');
     if (this.currentComponent) {
       this.appLocationElement.innerHTML = this.currentComponent.render(
         this.currentComponent.model
@@ -54,7 +55,7 @@ export default class App {
         // when pushing obj to the array, first the set trap is being triggered with prop === nextElInTheArray
         // and then the trap is triggered for the second time with prop === 'length'
         // fun fact: at first pass, the value of the length prop of the target remains 0, which causes the reduce, map etc function to ot trigger, hence nothing is rendered on the page XD
-        if(prop === 'length'){    // with this if, the debouncing is not necessary (for UX)
+        if(prop === 'length'){    
           console.log(
             `[SET]target: ${JSON.stringify(
               target
@@ -65,6 +66,7 @@ export default class App {
           return true;
         }
         target[prop] = value || new Inputs();
+        self.updateView();  // hmm
         return true;
       }
     });

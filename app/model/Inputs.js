@@ -29,7 +29,8 @@ export default class Inputs {
   // set the nex value
   setNextGenValue(nextVal) {
     // this.nextSerialNumber.next(nextVal);
-    this.nextSerialNumber = seqNumGen(nextVal);
+    // this.nextSerialNumber = seqNumGen(nextVal);
+    this.nextSerialNumber.next(nextVal);
   }
 
   getInputById(id) {
@@ -48,7 +49,6 @@ export default class Inputs {
   }
 
   deleteCoreInput(idToDelete) {
-    debugger;
     const index = this.getIndexById(idToDelete);
     const deletedInput = this.state.splice(index, 1);
     // delete this.state[index];

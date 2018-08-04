@@ -18,15 +18,21 @@ export default class Builder {
     document.querySelector(".app").addEventListener("click", e => {
       const btnAdd = e.target.matches(".btn--add");
       if (btnAdd) {
-        this.handleAddInput(e);
+        this.handleAddInput();
         this.persistState();
       }
 
-      const btnRemove = e.target.matches('.btn--remove');
-      if(btnRemove) {
+      const btnRemove = e.target.matches(".btn--remove");
+      if (btnRemove) {
         const inputId = e.target.closest("div").dataset.id;
-        console.log(inputId);
         this.handleRemoveCoreInput(inputId);
+      }
+
+      const btnAddSub = e.target.matches(".btn--add-sub");
+      if (btnAddSub) {
+        const inputId = e.target.closest("div");
+        inputId.insertAdjacentHTML("afterend", `<div> haloooooo</div>`);
+        this.handleAddSubInput(e);
       }
     });
 
@@ -35,7 +41,7 @@ export default class Builder {
     // - try different events, and select one that fits the best ❌
     // throttle the function invocation ✔
 
-    this.handle = e => {
+    const handleInputChange = e => {
       console.log("TRIGGERED 😡😡😡");
 
       if (checkIfInput(e)) {
@@ -69,24 +75,25 @@ export default class Builder {
         // you know, just tryin'
         // i guess it would be better to reassign the whole state
         // TODO when i find out why the shallow copy w/ spread operator is not working ✌
-
         // let actualState = { ...this.model}; //👈👈
       }
     };
 
     document
       .querySelector(".app")
-      .addEventListener("input", _.debounce(this.handle, 500));
+      .addEventListener("input", _.debounce(handleInputChange, 500));
   }
 
   coreInputTemplate(coreInput) {
     return `
       <div class="input input--core" data-id="${coreInput.id}">
-          Q: ${coreInput.question} ||  T: ${coreInput.type} ID:${
+          <!-- Q: ${coreInput.question} ||  T: ${coreInput.type} ID:${
       coreInput.serialNumber
-    }
+    } -->
+
+    ${coreInput.question} ||  T: ${coreInput.type} ID:${coreInput.serialNumber}
           <label for="question${coreInput.serialNumber}">Question: </label>
-          <input class="input__question" type="text" name="question${
+          <input autofocus class="input__question" type="text" name="question${
             coreInput.serialNumber
           }" placeholder="Enter the question..." value="${coreInput.question ||
       ""}"/>
@@ -102,9 +109,18 @@ export default class Builder {
               coreInput.type === "number" ? "selected" : ""
             }>Number</option>
           </select>
+        <button class="btn btn--add-sub">Add Sub-Input</button>
         <button class="btn btn--remove">&times;</button>
       </div>
   `;
+  }
+
+  subInputTemplate(subInput) {
+    return `
+      <div class="input input--sub" >
+
+      </div>
+    `;
   }
 
   getInputs() {
@@ -116,8 +132,7 @@ export default class Builder {
     return `<ul>${inputsHTML}</ul>`;
   }
 
-  handleAddInput(e, inputToAdd = {}) {
-    debugger;
+  handleAddInput(inputToAdd = {}) {
     const { question, type, id, serialNumber } = inputToAdd;
 
     const newCoreInput = this.model.coreInputs.addCoreInput(
@@ -126,7 +141,18 @@ export default class Builder {
       id,
       serialNumber
     );
-  };
+  }
+
+  handleAddSubInput(e) {
+    // 1. get parent input
+    const parent = e.target.closest("div");
+    // 2. if parent != core -> get core
+    const coreInput = e.target.closest(".input--core");
+
+    console.log(parent, coreInput);
+
+    // 3. update state
+  }
 
   handleRemoveCoreInput(id) {
     this.model.coreInputs.deleteCoreInput(id);
@@ -135,7 +161,6 @@ export default class Builder {
 
   // a method for persisting the stored data in localStorage
   persistState() {
-    debugger;
     console.log("$$setting state");
     localStorage.setItem(
       "form-builder",
@@ -144,31 +169,53 @@ export default class Builder {
   }
 
   getState() {
-    debugger;
     const state = JSON.parse(localStorage.getItem("form-builder"));
 
     if (state) {
       state.forEach(element => {
         // const newCoreInput = this.model.coreInputs.addCoreInput(q, t, id, sn);
-        const newCoreInput = this.handleAddInput(null, element);
+        const newCoreInput = this.handleAddInput(element);
       });
 
-      this.nextSerialNumber = this.model.coreInputs.setNextGenValue(this.model.coreInputs.getHighestId() + 1);
-
-      
-
-
+      this.nextSerialNumber = this.model.coreInputs.setNextGenValue(
+        this.model.coreInputs.getHighestId() + 1
+      );
     }
   }
 
   // component's view
   render(modelParam) {
-    return `
-        <div class="builder">
-            ${this.getInputs()}
-            <button class="btn--add">&#43;</button>
+    const builderHTML = `
+    <div class="builder">
+      <div class="builder__inputs">
+        ${this.getInputs()}
         </div>
-        `;
+        <button class="btn--add">&#43;</button
+    </div>
+    `;
+
+    // TODO: focus on the last added element
+    // idea:
+    // 1. compare the lastly rendered html with the new one (this should result in the newly added div)
+    // 2. get the input el from the div obtained above
+    // input.focus()
+
+    if (!this.lastResult) {
+      console.log("#!");
+      this.lastResult = builderHTML;
+    }
+
+    // below requires a little work to do
+    // TRY:
+    //  1. isolate the input--core divs
+    // 2. remove duplicates => result should be a newle created div
+    // 3. get the input from that div
+    // 4. if the above won't work, get saomkind of diff lib or implement the diff alg
+    const diffString = builderHTML.replace(this.lastResult, "XDDD");
+
+    this.lastResult = builderHTML;
+
+    return builderHTML;
   }
   // component's controller
   controller(model) {

@@ -1,11 +1,22 @@
 .builder {
-    // background: rgb(197, 162, 197);
-    min-width: 75rem;
-    display: flex;
+  // background: rgb(197, 162, 197);
+  // overflow: hidden;
+  min-height: calc(100vh - 2 * 5vw);
+  max-height: calc(100vh - 2 * 5vw);
+  min-width: inherit;
+  overflow: auto;
+  display: flex;
+
+  & > ul {
+    list-style: none;
+
+  }
+
+  &__inputs {
     justify-content: center;
+    flex-direction: column;
+    min-width: inherit;
+  }
 
 
-    & > ul {
-        list-style: none;
-    }
 }
