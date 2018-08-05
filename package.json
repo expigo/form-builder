@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "assets": "webpack -w --mode development",
+    "assets": "webpack -w --mode development --display-error-details --progress --color",
     "build": "webpack --mode production",
     "dev:client": "webpack-dev-server --mode development --open"
   },

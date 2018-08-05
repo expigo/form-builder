@@ -17,7 +17,6 @@ export default class Inputs {
     serialNumber = this.nextSerialNumber,
     subInputs = []
   ) {
-
     const coreInput = { question, type, subInputs };
 
     coreInput.id = id;
@@ -32,10 +31,20 @@ export default class Inputs {
     conditionAnswear = "",
     question = "",
     type = "",
-    subInputs = []
+    subInputs = [
+      {
+        question: "ziomek",
+        subInputs: [
+          {
+            question: "xEE",
+            subInputs: []
+          }
+        ]
+      }
+    ]
+    // subInputs = []
   ) {
-    const {coreInput, index} = this.getCoreInputWithIndexById(coreId);
-
+    const { coreInput, index } = this.getCoreInputWithIndexById(coreId);
 
     coreInput.subInputs.push({
       conditionType,
@@ -46,10 +55,9 @@ export default class Inputs {
     });
 
     return {
-        coreInput,
-        index
+      coreInput,
+      index
     };
-
   }
 
   // TODO: make it so it takes an obj with particular properties to update, like
