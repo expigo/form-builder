@@ -1040,14 +1040,14 @@ class Builder {
 
         // assign new values
         coreInput.question = updatedInput;
-        input.type = updatedType;
+        coreInput.type = updatedType;
 
         // update the state
-        actualState[index] = input; // does not trigger a proxy set trap
+        actualState[index] = coreInput; // does not trigger a proxy set trap
         // Two versions:
         // 1. setState() commented => no real-time view/state update => data taken from localStorage every time
         // 1. setState() uncommented => real-time view/state update => view rerender every state change
-        setState(actualState);
+        this.setState(actualState);
 
         this.persistState();
       }
