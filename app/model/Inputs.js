@@ -40,6 +40,10 @@ export default class Inputs {
             subInputs: []
           }
         ]
+      },
+      {
+        question: "deeper!",
+        subInputs: []
       }
     ]
     // subInputs = []
@@ -107,5 +111,29 @@ export default class Inputs {
     // or maybe i could just take the el at last index, but i admire the functional approach 😎😁
     // EDIT: well... TODO https://shamasis.net/2009/09/javascript-string-reversing-algorithm-performance/ 🤷‍♀️
     return sortedIds;
+  }
+
+  updateSub(coreId, position, valuesArr) {
+    const coreInput = this.getInputById(coreId);
+
+    position.shift(); // get the actual position in the coreInput.subInputs[]
+
+    // console.log(position);
+    // console.log(coreInput['subInputs'][0]);
+    // console.log(coreInput['subInputs'][0]['subInputs'][0]);
+
+    
+    // TODO: try with monad
+    const objToUpdate = position.reduce(
+      (ci, key) => ci["subInputs"][key],
+      coreInput
+    );
+
+
+    objToUpdate.conditionType = valuesArr[0];
+    objToUpdate.conditionAnswear = valuesArr[1];
+    objToUpdate.question = valuesArr[2];
+    objToUpdate.type = valuesArr[3];
+
   }
 }

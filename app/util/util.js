@@ -22,8 +22,9 @@ export const getInputValues = ([...nodes]) => {
   const values = nodes.reduce(
     (res, { value, tagName }) => [
       ...res,
-      ...((value && ["input", "select"].includes(tagName.toLowerCase())) ||
-      value === ""
+      // http://www.wolframalpha.com/widget/widgetPopup.jsp?p=v&id=a52797be9f91295a27b14cb751198ae3&title=Boolean%20Algebra%20Calculator&theme=blue&i0=(a%20AND%20b)%20OR%20(b%20AND%20c)&podSelect=
+      ...((value || value === "") &&
+      ["input", "select"].includes(tagName.toLowerCase())
         ? [value]
         : [])
     ],
@@ -31,4 +32,10 @@ export const getInputValues = ([...nodes]) => {
   );
 
   return values;
+  // return {
+  //   condType: values[0],
+  //   condAnswear: values[1],
+  //   inputQuestion: values[2],
+  //   inputType: values[3],
+  // }
 };

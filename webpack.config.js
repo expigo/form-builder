@@ -59,11 +59,7 @@ const config = {
       template: './app/index.html',
       filename: "./index.html"
     })
-  ],
-  node: {
-    dns: 'empty',
-    net: 'empty'
-    }
+  ]
 };
 
 

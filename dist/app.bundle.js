@@ -1047,7 +1047,7 @@ class Builder {
         // Two versions:
         // 1. setState() commented => no real-time view/state update => data taken from localStorage every time
         // 1. setState() uncommented => real-time view/state update => view rerender every state change
-        this.setState(actualState);
+        // this.setState(actualState);
 
         this.persistState();
       }
