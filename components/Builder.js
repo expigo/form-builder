@@ -123,7 +123,8 @@ export default class Builder {
               ${subInput.serialNumber} || Q: ${subInput.question} <br>
 
 
-              <select class="input__select" name="condType${subInput.serialNumber || ""}">
+              <select class="input__select" name="condType${subInput.serialNumber ||
+                ""}">
                 <option value="input" ${
                   subInput.conditionType === "input" ? "selected" : ""
                 }>Text</option>
@@ -142,12 +143,13 @@ export default class Builder {
 
         <br>
 
-              <label for="question${subInput.id}">Question: </label>
+              <label for="question${subInput.serialNumber}">Question: </label>
               <input class="input__question" type="text" name="question${
-                subInput.id
+                subInput.serialNumber
               }" placeholder="Enter the question..." value="${subInput.question ||
         ""}"/>
-              <select class="input__select" name="type${subInput.id || ""}">
+              <select class="input__select" name="type${subInput.serialNumber ||
+                ""}">
                 <option value="input" ${
                   subInput.type === "input" ? "selected" : ""
                 }>Text</option>
@@ -175,8 +177,6 @@ export default class Builder {
       return `<ul>${inputsHTML}</ul>`;
     };
 
-    
-
     const builderHTML = `
     <div class="builder">
       <div class="builder__inputs">
@@ -203,10 +203,82 @@ export default class Builder {
     // 2. remove duplicates => result should be a newle created div
     // 3. get the input from that div
     // 4. if the above won't work, get saomkind of diff lib or implement the diff alg
-    const diffString = builderHTML.replace(this.lastResult, "XDDD");
+    // const diffString = builderHTML.replace(this.lastResult, "XDDD");
+
+    const rx = /<div\s+class="input[\S\s]*?<\/div>/gi;
+
+    // const matchesLast = rx.exec(this.lastResult);
+    // const matchesActual = rx.exec(builderHTML);
+
+    const matchesActual = builderHTML.match(
+      /<div\s+class="input\s+input--sub[\S\s]*?<\/div>/gi
+    );
+    const matchesLast = this.lastResult.match(
+      /<div\s+class="input\s+input--sub[\S\s]*?<\/div>/gi
+    );
+
+    // console.log(matchesLast);
+    // console.log(matchesActual);
+
+    // not quite so 🙄
+    // const uniq = matchesActual && matchesLast && [ ...new Set([...matchesActual, ...matchesLast])]
+
+    // console.log(uniq);
+
+    let beforeChangeDiv = "";
+    let temp = '';
+ 
+
+
+    // overkill!
+    debugger;
+    let diff =
+      matchesActual &&
+      matchesLast &&
+      matchesActual.filter(arrEl1 => {
+        // check if sub-input from actual state exists in previous state
+
+
+        const isFound = matchesLast.some((arrEl2, i) => {
+
+          console.log('**' , i)
+          // return arrEl1 === arrEl2;
+          // this.temp = matchesLast[0];
+          
+          if (arrEl1 === arrEl2) {
+            temp = matchesLast[i + 1];
+            return true;
+          } else {
+            return false;
+          }
+        });
+
+
+        // if not found -> this is what we're looking for -> save the previous state
+        if (!isFound) beforeChangeDiv = temp || matchesLast[0];
+
+        // keep the actual stae
+        return !isFound;
+      });
+
+
+
+    // diff.length === 0 --> sth is missing --> focus on the first el
+    if (diff && diff.length) {
+
+      // find the input changed and focus on it
+      diff = diff.join("");
+
+      const subInputsNew = diff.match(/<input\s+[\S\s]*?\/>/gi);
+      const subInputsOld = beforeChangeDiv.match(/<input\s+[\S\s]*?\/>/gi);
+
+
+    } else {
+      //  focus on the first input
+      console.log('nah');
+    }
 
     this.lastResult = builderHTML;
-
     return builderHTML;
   }
 
@@ -327,12 +399,14 @@ export default class Builder {
 
       // get values from the inputs on the page
       // const [condType, condAnswear, updatedInput, updatedType] = getInputValues(
-      const [ ...valuesFromUI ] = getInputValues(
-        e.target.parentNode.children
-      );
+      const [...valuesFromUI] = getInputValues(e.target.parentNode.children);
 
       // update sub
-      const updatedCore = this.model.coreInputs.updateSub(coreInputId, subSerialNumber.split('.'), valuesFromUI);
+      const updatedCore = this.model.coreInputs.updateSub(
+        coreInputId,
+        subSerialNumber.split("."),
+        valuesFromUI
+      );
 
       return { coreInput, index };
     };
@@ -353,9 +427,8 @@ export default class Builder {
         // get the id id of the core input to be uptaded
         const closestInput = e.target.closest("div");
 
-        
         let sliceToUpdate = {};
-        
+
         // if closestInput el. id attr. exists => coreInput
         if (closestInput.dataset.id) {
           sliceToUpdate = updateCore(e, closestInput.dataset.id);
