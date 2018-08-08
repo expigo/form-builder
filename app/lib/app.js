@@ -1,4 +1,3 @@
-import CoreInput from "../model/CoreInput";
 import Inputs from "../model/Inputs";
 
 export default class App {
@@ -15,9 +14,7 @@ export default class App {
     this.componentByName[component.name] = component;
 
     if (component.model.coreInputs) {
-      component.model = this.proxify(
-        component.model
-      );
+      component.model = this.proxify(component.model);
     }
   }
 
@@ -33,16 +30,29 @@ export default class App {
   }
 
   updateView() {
-    console.log('updating view...');
+    console.log("updating view...");
     if (this.currentComponent) {
-      this.appLocationElement.innerHTML = this.currentComponent.render(
+      const { html, changedInputName } = this.currentComponent.render(
         this.currentComponent.model
       );
+      this.appLocationElement.innerHTML = html;
+
+      // focus on the last changed input (if there is one)
+      if (changedInputName) {
+
+        // unfortunately there is a quirk: https://stackoverflow.com/questions/511088/use-javascript-to-place-cursor-at-end-of-text-in-text-input-element
+        const inputToBeFocusedOn = document.querySelector(
+          `input[name="${changedInputName}"]`
+        );
+        inputToBeFocusedOn.focus();
+        const val = inputToBeFocusedOn.value;
+        inputToBeFocusedOn.value = '';
+        inputToBeFocusedOn.value = val;
+      }
     } else {
       this.appLocationElement.innerHTML = "404";
     }
   }
-
 
   // to track changes in the state
   // contenteditable on the actual form, changes reflected on the model
@@ -51,13 +61,12 @@ export default class App {
     const self = this;
     return new Proxy(model, {
       set(target, prop, value) {
-        
-        console.log(
-          `[SET]target: ${JSON.stringify(
-            target
-          )}\n prop: ${prop}\n value:${JSON.stringify(value)}`
-        );
-        if(prop === 'length'){    
+        // console.log(
+        //   `[SET]target: ${JSON.stringify(
+        //     target
+        //   )}\n prop: ${prop}\n value:${JSON.stringify(value)}`
+        // );
+        if (prop === "length") {
           console.log(
             `[SET]target: ${JSON.stringify(
               target
@@ -68,7 +77,7 @@ export default class App {
           return true;
         }
         target[prop] = value || new Inputs();
-        self.updateView();  // hmm
+        self.updateView(); // hmm
         return true;
       }
     });

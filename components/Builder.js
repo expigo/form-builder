@@ -42,6 +42,12 @@ export default class Builder {
   // component's view
   // make it return a promise!
   render(modelParam) {
+    // TODO: focus on the last added element
+    // idea:
+    // 1. compare the lastly rendered html with the new one (this should result in the newly added div)
+    // 2. get the input el from the div obtained above
+    // input.focus()
+
     // 👇🖖🤘 get it right!
     const getSubInputs = function getSub(parentInput, callback) {
       console.log("^^ getSubInput");
@@ -182,15 +188,9 @@ export default class Builder {
       <div class="builder__inputs">
         ${getCoreInputs()}
         </div>
-        <button class="btn--add">&#43;</button
+        <button class="btn--add">&#43;</button>
     </div>
     `;
-
-    // TODO: focus on the last added element
-    // idea:
-    // 1. compare the lastly rendered html with the new one (this should result in the newly added div)
-    // 2. get the input el from the div obtained above
-    // input.focus()
 
     if (!this.lastResult) {
       console.log("#!");
@@ -205,46 +205,18 @@ export default class Builder {
     // 4. if the above won't work, get saomkind of diff lib or implement the diff alg
     // const diffString = builderHTML.replace(this.lastResult, "XDDD");
 
-    const rx = /<div\s+class="input[\S\s]*?<\/div>/gi;
-
-    // const matchesLast = rx.exec(this.lastResult);
-    // const matchesActual = rx.exec(builderHTML);
-
-    const matchesActual = builderHTML.match(
-      /<div\s+class="input\s+input--sub[\S\s]*?<\/div>/gi
-    );
-    const matchesLast = this.lastResult.match(
-      /<div\s+class="input\s+input--sub[\S\s]*?<\/div>/gi
-    );
-
-    // console.log(matchesLast);
-    // console.log(matchesActual);
-
-    // not quite so 🙄
-    // const uniq = matchesActual && matchesLast && [ ...new Set([...matchesActual, ...matchesLast])]
-
-    // console.log(uniq);
+    const matchesActual = builderHTML.match(/<input\s+[\S\s]*?\/>/gi);
+    const matchesLast = this.lastResult.match(/<input\s+[\S\s]*?\/>/gi);
 
     let beforeChangeDiv = "";
-    let temp = '';
- 
+    let temp = "";
 
-
-    // overkill!
-    debugger;
     let diff =
       matchesActual &&
       matchesLast &&
       matchesActual.filter(arrEl1 => {
         // check if sub-input from actual state exists in previous state
-
-
         const isFound = matchesLast.some((arrEl2, i) => {
-
-          console.log('**' , i)
-          // return arrEl1 === arrEl2;
-          // this.temp = matchesLast[0];
-          
           if (arrEl1 === arrEl2) {
             temp = matchesLast[i + 1];
             return true;
@@ -253,7 +225,6 @@ export default class Builder {
           }
         });
 
-
         // if not found -> this is what we're looking for -> save the previous state
         if (!isFound) beforeChangeDiv = temp || matchesLast[0];
 
@@ -261,25 +232,21 @@ export default class Builder {
         return !isFound;
       });
 
-
-
     // diff.length === 0 --> sth is missing --> focus on the first el
+
+    let changedInputName = null;
+
     if (diff && diff.length) {
-
-      // find the input changed and focus on it
-      diff = diff.join("");
-
-      const subInputsNew = diff.match(/<input\s+[\S\s]*?\/>/gi);
-      const subInputsOld = beforeChangeDiv.match(/<input\s+[\S\s]*?\/>/gi);
-
-
+      changedInputName = /(?:name=")(.*?)(?:")/gi.exec(
+        diff.toString()
+      )[1];
     } else {
       //  focus on the first input
-      console.log('nah');
+      console.log("nah");
     }
 
     this.lastResult = builderHTML;
-    return builderHTML;
+    return { html: builderHTML, changedInputName };
   }
 
   // component's controller
@@ -419,8 +386,6 @@ export default class Builder {
       console.log("TRIGGERED 😡😡😡");
 
       if (checkIfInput(e)) {
-        debugger;
-
         // copy the actual state of state
         let actualState = this.model.coreInputs.state.slice(); //👈👈 is this a shallow copy? is it enough?
 
