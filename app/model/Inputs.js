@@ -27,30 +27,36 @@ export default class Inputs {
 
   addSubInput(
     coreId,
+    position,
     conditionType = "text",
     conditionAnswear = "",
     question = "",
     type = "",
-    subInputs = [
-      {
-        question: "ziomek",
-        subInputs: [
-          {
-            question: "xEE",
-            subInputs: []
-          }
-        ]
-      },
-      {
-        question: "deeper!",
-        subInputs: []
-      }
-    ]
-    // subInputs = []
+    // subInputs = [
+    //   {
+    //     question: "ziomek",
+    //     subInputs: [
+    //       {
+    //         question: "xEE",
+    //         subInputs: []
+    //       }
+    //     ]
+    //   },
+    //   {
+    //     question: "deeper!",
+    //     subInputs: []
+    //   }
+    // ]
+    subInputs = []
   ) {
     const { coreInput, index } = this.getCoreInputWithIndexById(coreId);
 
-    coreInput.subInputs.push({
+    const objToUpdate = this.constructor.findInputByPosition(
+      coreInput,
+      position
+    );
+
+    objToUpdate.subInputs.push({
       conditionType,
       conditionAnswear,
       question,
@@ -62,6 +68,26 @@ export default class Inputs {
       coreInput,
       index
     };
+  }
+
+  static findInputByPosition(coreInput, position) {
+    if (position) {
+      // TODO: try with monad
+
+      position = position.split('.');
+
+      position.shift(); // get the actual position in the coreInput.subInputs[]
+
+      // console.log(position);
+      // console.log(coreInput['subInputs'][0]);
+      // console.log(coreInput['subInputs'][0]['subInputs'][0]);
+
+      return position.reduce((ci, key) => ci["subInputs"][key], coreInput);
+
+    }
+    
+    return coreInput;
+    // return objToUpdate;
   }
 
   // TODO: make it so it takes an obj with particular properties to update, like
@@ -116,24 +142,13 @@ export default class Inputs {
   updateSub(coreId, position, valuesArr) {
     const coreInput = this.getInputById(coreId);
 
-    position.shift(); // get the actual position in the coreInput.subInputs[]
 
-    // console.log(position);
-    // console.log(coreInput['subInputs'][0]);
-    // console.log(coreInput['subInputs'][0]['subInputs'][0]);
 
-    
-    // TODO: try with monad
-    const objToUpdate = position.reduce(
-      (ci, key) => ci["subInputs"][key],
-      coreInput
-    );
-
+    const objToUpdate = Inputs.findInputByPosition(coreInput, position);
 
     objToUpdate.conditionType = valuesArr[0];
     objToUpdate.conditionAnswear = valuesArr[1];
     objToUpdate.question = valuesArr[2];
     objToUpdate.type = valuesArr[3];
-
   }
 }

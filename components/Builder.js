@@ -99,17 +99,19 @@ export default class Builder {
         coreInput.serialNumber
       }
             <label for="question${coreInput.serialNumber}">Question: </label>
-            <input class="input__question" type="text" name="question${
-              coreInput.serialNumber
-            }" placeholder="Enter the question..." value="${coreInput.question ||
+            <input class="input__question" type="${
+              coreInput.type
+            }" name="question${
+        coreInput.serialNumber
+      }" placeholder="Enter the question..." value="${coreInput.question ||
         ""}"/>
-            <select class="input__select" name="type${coreInput.serialNumber ||
-              ""}">
+            <select class="input__select" name="question${coreInput.serialNumber ||
+              ""}" data-val="${coreInput.type}">
               <option value="input" ${
                 coreInput.type === "input" ? "selected" : ""
               }>Text</option>
-              <option value="select" ${
-                coreInput.type === "select" ? "selected" : ""
+              <option value="radio" ${
+                coreInput.type === "radio" ? "selected" : ""
               }>Yes/No</option>
               <option value="number" ${
                 coreInput.type === "number" ? "selected" : ""
@@ -130,7 +132,7 @@ export default class Builder {
 
 
               <select class="input__select" name="condType${subInput.serialNumber ||
-                ""}">
+                ""}" data-val="${subInput.conditionType}">
                 <option value="input" ${
                   subInput.conditionType === "input" ? "selected" : ""
                 }>Text</option>
@@ -142,20 +144,24 @@ export default class Builder {
                 }>Number</option>
               </select>
               <label for="condType${subInput.serialNumber}">Answear: </label>
-              <input class="input__question" type="text" name="condType${
-                subInput.serialNumber
-              }" placeholder="Enter the matching answear..." value="${subInput.conditionAnswear ||
+              <input class="input__question" type="${
+                subInput.conditionType
+              }" name="condType${
+        subInput.serialNumber
+      }" placeholder="Enter the matching answear..." value="${subInput.conditionAnswear ||
         ""}"/>
 
         <br>
 
               <label for="question${subInput.serialNumber}">Question: </label>
-              <input class="input__question" type="text" name="question${
-                subInput.serialNumber
-              }" placeholder="Enter the question..." value="${subInput.question ||
+              <input class="input__question" type="${
+                subInput.type
+              }" name="question${
+        subInput.serialNumber
+      }" placeholder="Enter the question..." value="${subInput.question ||
         ""}"/>
-              <select class="input__select" name="type${subInput.serialNumber ||
-                ""}">
+              <select class="input__select" name="question${subInput.serialNumber ||
+                ""}" data-val="${subInput.type}">
                 <option value="input" ${
                   subInput.type === "input" ? "selected" : ""
                 }>Text</option>
@@ -192,6 +198,8 @@ export default class Builder {
     </div>
     `;
 
+    // getting ready for finding the last updated/added input
+    // or maybe i should/ve store it in the state xD
     if (!this.lastResult) {
       console.log("#!");
       this.lastResult = builderHTML;
@@ -205,8 +213,11 @@ export default class Builder {
     // 4. if the above won't work, get saomkind of diff lib or implement the diff alg
     // const diffString = builderHTML.replace(this.lastResult, "XDDD");
 
-    const matchesActual = builderHTML.match(/<input\s+[\S\s]*?\/>/gi);
-    const matchesLast = this.lastResult.match(/<input\s+[\S\s]*?\/>/gi);
+    // const matchesActual = builderHTML.match(/<input\s+[\S\s]*?\/>/gi);
+    // const matchesLast = this.lastResult.match(/<input\s+[\S\s]*?\/>/gi);
+
+    const matchesActual = builderHTML.match(/<(input|select)\s+[\S\s]*?>/gi);
+    const matchesLast = this.lastResult.match(/<(input|select)\s+[\S\s]*?>/gi);
 
     let beforeChangeDiv = "";
     let temp = "";
@@ -232,18 +243,16 @@ export default class Builder {
         return !isFound;
       });
 
-    // diff.length === 0 --> sth is missing --> focus on the first el
-
     let changedInputName = null;
 
+    // diff.length === 0 --> sth is missing --> focus on the first el
     if (diff && diff.length) {
-      changedInputName = /(?:name=")(.*?)(?:")/gi.exec(
-        diff.toString()
-      )[1];
+      changedInputName = /(?:name=")(.*?)(?:")/gi.exec(diff.toString())[1];
     } else {
       //  focus on the first input
       console.log("nah");
     }
+
 
     this.lastResult = builderHTML;
     return { html: builderHTML, changedInputName };
@@ -273,7 +282,7 @@ export default class Builder {
 
     const handleAddInput = (inputToAdd = {}) => {
       // copy the actual state of state
-      let actualState = this.model.coreInputs.state; //👈👈
+      let actualState = this.model.coreInputs.state.slice(); //👈👈
       // create new core input
       const { question, type, id, serialNumber } = inputToAdd;
 
@@ -292,12 +301,14 @@ export default class Builder {
 
     const handleAddSubInput = e => {
       // 1. get parent input
-      const parent = e.target.closest("div");
+      const position = e.target.closest("div").dataset.serial;
       // 2. if parent != core -> get core
       const coreInputId = e.target.closest(".input--core").dataset.id;
 
+      console.log(position);
+
       const { coreInput, index } = this.model.coreInputs.addSubInput(
-        coreInputId
+        coreInputId, position
       );
 
       // 3. update state
@@ -355,9 +366,6 @@ export default class Builder {
     const updateSub = (e, subSerialNumber) => {
       const coreInputId = e.target.closest("div[data-id]").dataset.id;
 
-      // copy the actual state of state
-      let actualState = this.model.coreInputs.state; //👈👈
-
       // get the actual input to update along its index in the state
       const {
         coreInput,
@@ -371,7 +379,7 @@ export default class Builder {
       // update sub
       const updatedCore = this.model.coreInputs.updateSub(
         coreInputId,
-        subSerialNumber.split("."),
+        subSerialNumber,
         valuesFromUI
       );
 
@@ -415,6 +423,6 @@ export default class Builder {
 
     document
       .querySelector(".app")
-      .addEventListener("input", _.debounce(handleInputChange, 500));
+      .addEventListener("input", _.debounce(handleInputChange, 200));
   }
 }
