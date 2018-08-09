@@ -1,7 +1,7 @@
 import _ from "lodash";
 
 import Inputs from "../app/model/Inputs";
-import { checkIfInput, getInputValues } from "../app/util/util";
+import { checkIfInput, getInputValues, splitExclusive } from "../app/util/util";
 
 export default class Builder {
   constructor() {
@@ -174,7 +174,7 @@ export default class Builder {
               </select>
               <br>
             <button class="btn btn--add-sub">Add Sub-Input</button>
-            <button class="btn btn--remove">&times;</button>
+            <button class="btn btn--remove-sub">&times;</button>
     
         </div>
       `;
@@ -253,7 +253,6 @@ export default class Builder {
       console.log("nah");
     }
 
-
     this.lastResult = builderHTML;
     return { html: builderHTML, changedInputName };
   }
@@ -268,10 +267,9 @@ export default class Builder {
     this.model.coreInputs = model.coreInputs;
 
     const handleRemoveCoreInput = idToDelete => {
-      // this.model.coreInputs.deleteCoreInput(id);
+      let actualState = this.model.coreInputs.state.slice(); //👈👈
 
-      let actualState = this.model.coreInputs.state; //👈👈
-
+      // TODO: make it more consistent with the model
       const index = this.model.coreInputs.getIndexById(idToDelete);
       const deletedInput = actualState.splice(index, 1);
 
@@ -308,11 +306,12 @@ export default class Builder {
       console.log(position);
 
       const { coreInput, index } = this.model.coreInputs.addSubInput(
-        coreInputId, position
+        coreInputId,
+        position
       );
 
       // 3. update state
-      let actualState = this.model.coreInputs.state;
+      let actualState = this.model.coreInputs.state.slice();
 
       actualState[index] = coreInput;
       this.setState(actualState);
@@ -341,6 +340,37 @@ export default class Builder {
         // const inputId = e.target.closest("div");
         // inputId.insertAdjacentHTML("afterend", `<div> haloooooo</div>`);
         handleAddSubInput(e);
+      }
+
+      const btnRemoveSub = e.target.matches(".btn--remove-sub");
+
+      if (btnRemoveSub) {
+        // 1. the the position of the subinput to delete
+        const position = e.target.closest("div").dataset.serial;
+
+        // 2. get its parent position, along with the location within it
+        const [parentPosition, indexToDelete] = splitExclusive(position)(position.lastIndexOf('.'));
+
+        // 3. the the core input to be updated
+        const coreInputId = e.target.closest(".input--core").dataset.id;
+        const {
+          coreInput,
+          index
+        } = this.model.coreInputs.getCoreInputWithIndexById(coreInputId);
+
+        // 4. get the subToDelete parent to update
+        const parentToUpdate = Inputs.findInputByPosition(coreInput, parentPosition);
+
+        // 5. delete the sub basing on the data fetched before
+        parentToUpdate.subInputs.splice(indexToDelete, 1);
+
+
+        // 6. update state
+      let actualState = this.model.coreInputs.state.slice();
+      actualState[index] = coreInput;
+      this.setState(actualState);
+      this.persistState();
+        
       }
     });
 

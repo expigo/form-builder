@@ -71,6 +71,7 @@ export default class Inputs {
   }
 
   static findInputByPosition(coreInput, position) {
+      debugger;
     if (position) {
       // TODO: try with monad
 

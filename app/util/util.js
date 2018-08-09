@@ -1,3 +1,5 @@
+import { stringify } from "querystring";
+
 export function* seqNumGen(startingNumber) {
   let counter = startingNumber || 1;
   while (true) {
@@ -39,3 +41,5 @@ export const getInputValues = ([...nodes]) => {
   //   inputType: values[3],
   // }
 };
+
+export const splitExclusive = stringToSplit => index => [stringToSplit.slice(0, index), stringToSplit.slice(index + 1)];
