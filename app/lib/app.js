@@ -1,3 +1,4 @@
+import Scroll from "scroll-js";
 import Inputs from "../model/Inputs";
 
 export default class App {
@@ -32,21 +33,84 @@ export default class App {
   updateView() {
     console.log("updating view...");
     if (this.currentComponent) {
-      const { html, changedInputName } = this.currentComponent.render(
-        this.currentComponent.model
-      );
+      const {
+        html,
+        changedInputName,
+        newCoreAdded,
+        firstInput,
+        lastInput
+      } = this.currentComponent.render(this.currentComponent.model);
       this.appLocationElement.innerHTML = html;
+
+      // junk START
+      const btn = document.querySelector(".btn--add");
+
+      if (btn && !btn.classList.contains("btn--flag")) {
+        if (firstInput) {
+          btn.classList.add("btn--flag");
+          setTimeout(function() {
+            btn.classList.remove("btn--start");
+          }, 1);
+        }
+        btn.classList.remove("btn--start");
+
+        if (lastInput) {
+          btn.classList.add("btn--start");
+          setTimeout(function() {
+            btn.classList.add("btn--end");
+            btn.classList.remove("btn--start");
+          }, 100);
+        }
+      }
+
+      // junk END
+
+
+      debugger;
 
       // focus on the last changed input (if there is one)
       if (changedInputName) {
-
         // unfortunately there is a quirk: https://stackoverflow.com/questions/511088/use-javascript-to-place-cursor-at-end-of-text-in-text-input-element
         const inputToBeFocusedOn = document.querySelector(
           `input[name="${changedInputName}"]`
         );
+        
+
+
+        ///////////////////////////////////////////
+        // const builder = document.querySelector(".builder__inputs");
+        // // const scrollEnd =
+        // // builder.scrollHeight - builder.scrollTop - builder.clientHeight;
+
+        // const scrollEnd = builder.scrollHeight - builder.scrollTop === builder.clientHeight;
+        
+        // console.log(
+        //   builder.scrollHeight,
+        //   builder.scrollTop,
+        //   builder.clientHeight,
+        //   builder.offsetHeight
+        // );
+        
+        // console.log(scrollEnd);
+        ///////////////////////////////////////////
+        
+        
+        if (newCoreAdded) {
+          var scroll = new Scroll(document.querySelector(".builder"));
+          scroll
+            .toElement(inputToBeFocusedOn.closest('div[data-id]'), {
+              duration: 1000,
+              easing: "easeInOutCubic"
+            })
+            .then(function() {
+              // well, scroll is enough
+              console.log('scrolled!');
+            });
+        }
+
         inputToBeFocusedOn.focus();
         const val = inputToBeFocusedOn.value;
-        inputToBeFocusedOn.value = '';
+        inputToBeFocusedOn.value = "";
         inputToBeFocusedOn.value = val;
       }
     } else {

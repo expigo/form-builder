@@ -8,11 +8,8 @@ header {
       display: flex;
       justify-content: center;
       align-items: center;
-    //   flex: 1 1 auto;
       width: 15rem;
-      // background: #8cacea;
-      // background: $gradient5 fixed;
-      // opacity: 0.1;
+
       height: 2rem;
       transform: translateY(-2.5rem);
 
@@ -32,9 +29,6 @@ header {
             height: .6rem;
           }
 
-        
-        // text-shadow: -1px 0 $color-secondary, 0 1px $color-secondary, 1px 0 $color-secondary, 0 -1px $color-secondary;
-
         &:hover::after {
           content: "";
           width: 100%;
@@ -49,23 +43,3 @@ header {
 }
 
 
-@keyframes moveInBottom {
-    0% {
-      /*add the beginning of animation, the object is invisibe*/
-      opacity: 0;
-      transform: translateY(1rem);
-      height: .1rem;
-    }
-
-    // 80% {
-    //     opacity: .7;
-    //     transform: translateY(-.1rem);
-    //     height: .3rem;
-    // }
-  
-    80% {
-      opacity: 1;
-      transform: translateY(0);
-      height: .6rem;
-    }
-  }

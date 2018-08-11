@@ -22,12 +22,14 @@ body {
 
 .container {
   background: #fff;
-  max-width: 120rem;
+  max-width: 100rem;
+  min-width: 80rem;
   min-height: 60vh;
+  max-height: calc(100vh - 2 * 4vw);
   margin: 4vw auto;
   border-radius: 0.6rem;
   box-shadow: 0 2rem 6rem 0.5rem rgba(101, 90, 86, 0.2);
-
+  // overflow: auto;
 
   &::before {
     content: "";
@@ -35,8 +37,13 @@ body {
     height: 0.3rem;
     display: block;
     background: $gradient fixed;
+
   }
 }
 
-
-//
+.app {
+  min-height: inherit;
+  max-height: inherit;
+  min-width: inherit;
+  max-width: inherit;
+}

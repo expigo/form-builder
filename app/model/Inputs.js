@@ -12,7 +12,7 @@ export default class Inputs {
 
   addCoreInput(
     question = "",
-    type = "",
+    type = "text",
     id = uuidv1(),
     serialNumber = this.nextSerialNumber,
     subInputs = []
@@ -71,11 +71,11 @@ export default class Inputs {
   }
 
   static findInputByPosition(coreInput, position) {
-      debugger;
+    debugger;
     if (position) {
       // TODO: try with monad
 
-      position = position.split('.');
+      position = position.split(".");
 
       position.shift(); // get the actual position in the coreInput.subInputs[]
 
@@ -84,9 +84,8 @@ export default class Inputs {
       // console.log(coreInput['subInputs'][0]['subInputs'][0]);
 
       return position.reduce((ci, key) => ci["subInputs"][key], coreInput);
-
     }
-    
+
     return coreInput;
     // return objToUpdate;
   }
@@ -130,20 +129,15 @@ export default class Inputs {
   }
 
   getHighestId() {
-    const [sortedIds] = this.state
-      .map(el => el.serialNumber)
-      .sort()
-      .reverse()
-      .slice(); // i suppose it is less performant than providing a comparator, but not much enough to make a significant difference
-    // or maybe i could just take the el at last index, but i admire the functional approach 😎😁
-    // EDIT: well... TODO https://shamasis.net/2009/09/javascript-string-reversing-algorithm-performance/ 🤷‍♀️
-    return sortedIds;
+    if (!this.state.length) return;
+    const sortedIds = this.state.map(el => el.serialNumber);
+
+    const max = Math.max(...sortedIds);
+    return max;
   }
 
   updateSub(coreId, position, valuesArr) {
     const coreInput = this.getInputById(coreId);
-
-
 
     const objToUpdate = Inputs.findInputByPosition(coreInput, position);
 

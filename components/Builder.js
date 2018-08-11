@@ -1,7 +1,12 @@
 import _ from "lodash";
 
 import Inputs from "../app/model/Inputs";
-import { checkIfInput, getInputValues, splitExclusive } from "../app/util/util";
+import {
+  checkIfInput,
+  getInputValues,
+  splitExclusive,
+  DOMtraversal
+} from "../app/util/util";
 
 export default class Builder {
   constructor() {
@@ -11,6 +16,7 @@ export default class Builder {
     };
 
     window.addEventListener("DOMContentLoaded", e => {
+      console.log("^^loaded");
       this.getState();
     });
   }
@@ -73,6 +79,7 @@ export default class Builder {
         i.subInputs.length > 0 &&
         i.subInputs.map((temp, ii) => {
           temp.serialNumber = `${i.serialNumber}.${ii}`;
+          // temp.condType = i.type; TODOOOOO
           get(temp, callback);
           // callback(temp);
         });
@@ -90,92 +97,118 @@ export default class Builder {
       });
 
       return `
-        <div class="input input--core" data-id="${coreInput.id}">
-            <!-- Q: ${coreInput.question} ||  T: ${coreInput.type} ID:${
+          <div class="input input__core" data-id="${coreInput.id}">
+        
+        <!--
+        Q: ${coreInput.question} ||  T: ${coreInput.type} ID:${
         coreInput.serialNumber
-      } -->
-  
-      ${coreInput.question} ||  T: ${coreInput.type} ID:${
-        coreInput.serialNumber
-      }
-            <label for="question${coreInput.serialNumber}">Question: </label>
-            <input class="input__question" type="${
-              coreInput.type
-            }" name="question${
-        coreInput.serialNumber
-      }" placeholder="Enter the question..." value="${coreInput.question ||
-        ""}"/>
-            <select class="input__select" name="question${coreInput.serialNumber ||
-              ""}" data-val="${coreInput.type}">
-              <option value="input" ${
-                coreInput.type === "input" ? "selected" : ""
-              }>Text</option>
-              <option value="radio" ${
-                coreInput.type === "radio" ? "selected" : ""
-              }>Yes/No</option>
-              <option value="number" ${
-                coreInput.type === "number" ? "selected" : ""
-              }>Number</option>
-            </select>
-            ${subInputs}
-          <button class="btn btn--add-sub">Add Sub-Input</button>
-          <button class="btn btn--remove">&times;</button>
+      } 
+
+       <br>
+  -->
+
+
+            <div class="input__question input__question--core">
+              <input type="text" name="question${coreInput.serialNumber}"          placeholder="Enter the question..." value="${coreInput.question ||
+                       ""}" required data-validation-error="*Required">
+              <label for="question${coreInput.serialNumber}">Enter the question...</label>
+              <span class="input__error" aria-live="polite"></span>
+            </div>
+
+            <div class="input__type input__type--core">
+              Type: <select name="question${coreInput.serialNumber || ""}" data-val="${
+                            coreInput.type
+                             }" required>
+                      <option value="input" ${
+                        coreInput.type === "input" ? "selected" : ""
+                      }>Text</option>
+                      <option value="radio" ${
+                        coreInput.type === "radio" ? "selected" : ""
+                      }>Yes/No</option>
+                      <option value="number" ${
+                        coreInput.type === "number" ? "selected" : ""
+                      }>Number</option>
+                    </select>
+              
+            </div>
+            
+              <button class="btn btn--add-sub" value="Add Sub-Input">Add Sub-Input</button>
+              <button class="btn btn--remove">&times;</button>
+
+              <div class="input__subs">
+                ${subInputs}
+              </div>
+
   
         </div>
+
     `;
     };
 
     const subInputTemplate = subInput => {
       return `
-        <div class="input input--sub" data-serial="${subInput.serialNumber}">
-              ${subInput.serialNumber} || Q: ${subInput.question} <br>
+        <div class="input input__sub input__sub-${
+          subInput.serialNumber.length
+        }" data-serial="${subInput.serialNumber}">
 
 
-              <select class="input__select" name="condType${subInput.serialNumber ||
-                ""}" data-val="${subInput.conditionType}">
+        <!--
+        Q: ${subInput.question} ||  T: ${subInput.type} ID:${
+        subInput.serialNumber
+      } 
+
+      -->
+
+
+        <div class="input__condition">
+        
+        Condition
+        <select required name="condType${subInput.serialNumber ||
+          ""}" data-val="${subInput.conditionType}">
                 <option value="input" ${
                   subInput.conditionType === "input" ? "selected" : ""
                 }>Text</option>
-                <option value="select" ${
-                  subInput.conditionType === "select" ? "selected" : ""
+                <option value="radio" ${
+                  subInput.conditionType === "radio" ? "selected" : ""
                 }>Yes/No</option>
                 <option value="number" ${
                   subInput.conditionType === "number" ? "selected" : ""
                 }>Number</option>
               </select>
-              <label for="condType${subInput.serialNumber}">Answear: </label>
-              <input class="input__question" type="${
-                subInput.conditionType
-              }" name="condType${
+              <input type="${subInput.conditionType}" name="condType${
         subInput.serialNumber
       }" placeholder="Enter the matching answear..." value="${subInput.conditionAnswear ||
-        ""}"/>
+        ""}" required data-validation-error="*Required">
+                <label for="condType${subInput.serialNumber}">Match: </label>
+          <span class="input__error" aria-live="polite"></span>
 
-        <br>
-
-              <label for="question${subInput.serialNumber}">Question: </label>
-              <input class="input__question" type="${
-                subInput.type
-              }" name="question${
+        </div>
+        
+        
+        <div class="input__question">
+        <input type="text" name="question${
         subInput.serialNumber
       }" placeholder="Enter the question..." value="${subInput.question ||
-        ""}"/>
-              <select class="input__select" name="question${subInput.serialNumber ||
-                ""}" data-val="${subInput.type}">
+        ""}" required data-validation-error="*Required">
+          <label for="question${subInput.serialNumber}">Question: </label>
+          <span class="input__error" aria-live="polite"></span>
+        <select required name="question${subInput.serialNumber ||
+          ""}" data-val="${subInput.type}">
                 <option value="input" ${
                   subInput.type === "input" ? "selected" : ""
                 }>Text</option>
-                <option value="select" ${
-                  subInput.type === "select" ? "selected" : ""
+                <option value="radio" ${
+                  subInput.type === "radio" ? "selected" : ""
                 }>Yes/No</option>
                 <option value="number" ${
                   subInput.type === "number" ? "selected" : ""
                 }>Number</option>
-              </select>
-              <br>
-            <button class="btn btn--add-sub">Add Sub-Input</button>
-            <button class="btn btn--remove-sub">&times;</button>
-    
+                </select>
+                <br>
+                
+                </div>
+                <button class="btn btn--add-sub">Add Sub-Input</button>
+                <button class="btn btn--remove-sub">&times;</button>
         </div>
       `;
     };
@@ -189,12 +222,21 @@ export default class Builder {
       return `<ul>${inputsHTML}</ul>`;
     };
 
+    const coreInputs = getCoreInputs();
+    console.log(coreInputs === "<ul></ul>");
+
     const builderHTML = `
     <div class="builder">
-      <div class="builder__inputs">
-        ${getCoreInputs()}
+      <div class="builder__inputs ${coreInputs === "<ul></ul>" ? "imOut" : ""}">
+        ${coreInputs}
         </div>
-        <button class="btn--add">&#43;</button>
+
+          <button class="btn btn--add ${
+            coreInputs === "<ul></ul>" ? "btn--end" : ""
+          }">
+           &#43;
+          </button>
+
     </div>
     `;
 
@@ -219,13 +261,22 @@ export default class Builder {
     const matchesActual = builderHTML.match(/<(input|select)\s+[\S\s]*?>/gi);
     const matchesLast = this.lastResult.match(/<(input|select)\s+[\S\s]*?>/gi);
 
+
+
+    const renderInfo = {
+      newCoreAdded: false,
+      firstInput: matchesLast === null,
+      lastInput: matchesActual === null
+    };
+
     let beforeChangeDiv = "";
     let temp = "";
+    let diff = "";
 
-    let diff =
-      matchesActual &&
-      matchesLast &&
-      matchesActual.filter(arrEl1 => {
+    if (matchesActual && matchesLast) {
+      renderInfo.newCoreAdded = matchesActual.length - matchesLast.length === 2; // the difference between number of inputs in coreInput and subInput
+
+      diff = matchesActual.filter(arrEl1 => {
         // check if sub-input from actual state exists in previous state
         const isFound = matchesLast.some((arrEl2, i) => {
           if (arrEl1 === arrEl2) {
@@ -242,19 +293,28 @@ export default class Builder {
         // keep the actual stae
         return !isFound;
       });
+    }
 
-    let changedInputName = null;
+    console.log(diff);
 
     // diff.length === 0 --> sth is missing --> focus on the first el
     if (diff && diff.length) {
-      changedInputName = /(?:name=")(.*?)(?:")/gi.exec(diff.toString())[1];
+      renderInfo.changedInputName = /(?:name=")(.*?)(?:")/gi.exec(
+        diff.toString()
+      )[1];
     } else {
       //  focus on the first input
       console.log("nah");
     }
 
+
     this.lastResult = builderHTML;
-    return { html: builderHTML, changedInputName };
+
+    // TODO: keep track of the last position to make the scrolling more smooth
+
+    renderInfo.html = builderHTML;
+    return renderInfo;
+    // return { html: builderHTML, renderInfo };
   }
 
   // component's controller
@@ -291,23 +351,57 @@ export default class Builder {
         serialNumber
       );
 
-      // actualState.push(newCoreInput);
-      // this.setState(actualState);
-
       this.setState([...actualState, newCoreInput]);
     };
 
     const handleAddSubInput = e => {
       // 1. get parent input
-      const position = e.target.closest("div").dataset.serial;
-      // 2. if parent != core -> get core
-      const coreInputId = e.target.closest(".input--core").dataset.id;
+      const parent = e.target.closest("div");
 
-      console.log(position);
+      // 2. if parent != core -> get core
+      const coreInputId = e.target.closest(".input__core");
+
+      /* ----------------- VALIDATION START -------------------*/
+
+      // 1. get inputs to validate (always contained within the first two direct div of the parent div of the subInput to be newly created)
+      const inputsToValidate = parent.querySelectorAll(
+        ":scope > div:nth-of-type(-n+2)"
+      );
+
+      // flag that indicates how the validation went
+      let freeToGo = true;
+
+      // 2. validate:
+      // for every element to validate
+      for (let i of inputsToValidate) {
+        // grab all the nested elements
+        for (let element of DOMtraversal(i)) {
+          // if the element is an input
+          if (checkIfInput(element)) {
+            // check whether everything is ok
+            if (!element.checkValidity()) {
+              // if not, don't let them through!
+              // element.reportValidity();
+              element.classList.add("util-shaky");
+              setTimeout(() => {
+                element.classList.remove("util-shaky");
+              }, 700);
+              const msg =
+                element.dataset.validationError || "sth bad happened 🙆‍♀️";
+              element.nextElementSibling.nextElementSibling.innerHTML = `${msg}`;
+              element.nextElementSibling.nextElementSibling.classList.add('util-active-block');
+              freeToGo = false;
+            }
+          }
+        }
+      }
+
+      if (!freeToGo) return;
+      /* ----------------- VALIDATION END -------------------*/
 
       const { coreInput, index } = this.model.coreInputs.addSubInput(
-        coreInputId,
-        position
+        coreInputId.dataset.id,
+        parent.dataset.serial
       );
 
       // 3. update state
@@ -323,6 +417,7 @@ export default class Builder {
 
     // handle adding new core question with 'add' btn
     document.querySelector(".app").addEventListener("click", e => {
+      // e.preventDefault();
       const btnAdd = e.target.matches(".btn--add");
       if (btnAdd) {
         handleAddInput();
@@ -349,41 +444,47 @@ export default class Builder {
         const position = e.target.closest("div").dataset.serial;
 
         // 2. get its parent position, along with the location within it
-        const [parentPosition, indexToDelete] = splitExclusive(position)(position.lastIndexOf('.'));
+        const [parentPosition, indexToDelete] = splitExclusive(position)(
+          position.lastIndexOf(".")
+        );
 
         // 3. the the core input to be updated
-        const coreInputId = e.target.closest(".input--core").dataset.id;
+        const coreInputId = e.target.closest(".input__core").dataset.id;
         const {
           coreInput,
           index
         } = this.model.coreInputs.getCoreInputWithIndexById(coreInputId);
 
         // 4. get the subToDelete parent to update
-        const parentToUpdate = Inputs.findInputByPosition(coreInput, parentPosition);
+        const parentToUpdate = Inputs.findInputByPosition(
+          coreInput,
+          parentPosition
+        );
 
         // 5. delete the sub basing on the data fetched before
         parentToUpdate.subInputs.splice(indexToDelete, 1);
 
-
         // 6. update state
-      let actualState = this.model.coreInputs.state.slice();
-      actualState[index] = coreInput;
-      this.setState(actualState);
-      this.persistState();
-        
+        let actualState = this.model.coreInputs.state.slice();
+        actualState[index] = coreInput;
+        this.setState(actualState);
+        this.persistState();
       }
     });
 
-    const updateCore = (e, questionId) => {
+    const updateCore = (e, input) => {
       // get the actual input to update along its index in the state
       const {
         coreInput,
         index
-      } = this.model.coreInputs.getCoreInputWithIndexById(questionId);
+      } = this.model.coreInputs.getCoreInputWithIndexById(input.dataset.id);
 
       // get values from the inputs on the page
       const [updatedInput, updatedType] = getInputValues(
-        e.target.parentNode.children
+        // e.target.parentNode.children
+        // e.target.closest('div[data-id]')
+        // input
+        e.target.parentNode.parentNode.children
       );
 
       // assign new values
@@ -404,7 +505,9 @@ export default class Builder {
 
       // get values from the inputs on the page
       // const [condType, condAnswear, updatedInput, updatedType] = getInputValues(
-      const [...valuesFromUI] = getInputValues(e.target.parentNode.children);
+      const [...valuesFromUI] = getInputValues(
+        e.target.parentNode.parentNode.children
+      );
 
       // update sub
       const updatedCore = this.model.coreInputs.updateSub(
@@ -423,20 +526,22 @@ export default class Builder {
     const handleInputChange = e => {
       console.log("TRIGGERED 😡😡😡");
 
-      if (checkIfInput(e)) {
+      if (checkIfInput(e.target)) {
         // copy the actual state of state
         let actualState = this.model.coreInputs.state.slice(); //👈👈 is this a shallow copy? is it enough?
 
-        // get the id id of the core input to be uptaded
-        const closestInput = e.target.closest("div");
+        // get the id id of the core input to be updated
+        const closestDiv = e.target.closest("div");
 
         let sliceToUpdate = {};
+        debugger;
 
         // if closestInput el. id attr. exists => coreInput
-        if (closestInput.dataset.id) {
-          sliceToUpdate = updateCore(e, closestInput.dataset.id);
+        // 😑🙄 TODO: i don't like the way it is hardcoded
+        if (closestDiv.parentNode.dataset.id) {
+          sliceToUpdate = updateCore(e, closestDiv.parentNode);
         } else {
-          sliceToUpdate = updateSub(e, closestInput.dataset.serial);
+          sliceToUpdate = updateSub(e, closestDiv.parentNode.dataset.serial);
         }
 
         actualState[sliceToUpdate.index] = sliceToUpdate.coreInput;
