@@ -18,7 +18,7 @@ $color-quaternary: #eeeeee;
 $grad: linear-gradient(to right bottom, $color-primary, $color-secondary);
 
 $gradient: linear-gradient(to right bottom, #11998e, #38ef7d, #ece9e6);
-$gradient-reversed: linear-gradient(to right bottom, #ece9e6, #11998e, #38ef7d);
+$gradient-reversed: linear-gradient(to left bottom, #ece9e6, #11998e, #38ef7d);
 $gradient2: linear-gradient(to right, #0f0c29, #302b63, #24243e);
 $gradient3: linear-gradient(to right bottom, #f17f42, #ce6d39);
 $gradient4: linear-gradient(90deg, #f2f2f0, #ce6d39);

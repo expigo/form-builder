@@ -1,0 +1,87 @@
+@keyframes glowing {
+  0% {
+    box-shadow: 0 0 -10px $color-ternary5;
+  }
+  40% {
+    box-shadow: 0 0 20px $color-ternary5;
+  }
+  60% {
+    box-shadow: 0 0 20px $color-ternary5;
+  }
+  100% {
+    box-shadow: 0 0 -10px $color-ternary5;
+  }
+}
+
+@keyframes moveInBottom {
+  0% {
+    /*add the beginning of animation, the object is invisibe*/
+    opacity: 0;
+    transform: translateY(1rem);
+    height: 0.1rem;
+  }
+
+  // 80% {
+  //     opacity: .7;
+  //     transform: translateY(-.1rem);
+  //     height: .3rem;
+  // }
+
+  80% {
+    opacity: 1;
+    transform: translateY(0);
+    height: 0.6rem;
+  }
+}
+
+@keyframes moveInRight {
+  0% {
+    /*add the beginning of animation, the object is invisibe*/
+    opacity: 0.4;
+    transform: translateX(-20rem);
+  }
+
+  90% {
+    opacity: 0.85;
+    transform: translateX(5px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes moveInLeft {
+  0% {
+    /*add the beginning of animation, the object is invisibe*/
+    opacity: 0.4;
+    transform: translateX(20rem);
+  }
+
+  90% {
+    opacity: 0.85;
+    transform: translateX(-5px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes shake {
+  10%, 90% {
+    transform: translate3d(-1px, 0, 0);
+  }
+  
+  20%, 80% {
+    transform: translate3d(2px, 0, 0);
+  }
+
+  30%, 50%, 70% {
+    transform: translate3d(-4px, 0, 0);
+  }
+
+  40%, 60% {
+    transform: translate3d(4px, 0, 0);
+  }
+}

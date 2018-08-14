@@ -1,0 +1,66 @@
+.btn {
+    cursor: pointer;
+
+  &--remove {
+    display: none;
+    align-self: flex-end;
+  }
+
+
+  &--remove {
+      width: 2rem;
+      height: 2rem;
+      border: 0;
+  }
+
+
+  &--add {
+    position: sticky;
+    top: 1rem;
+    height: 5rem;
+    border-radius: 1000%;
+    background: $gradient6;
+    font-size: 3rem;
+    color: $color-ternary2;
+    margin: 1rem;
+    align-self: center;
+    width: 5rem;
+    transition: all .7s;
+}
+
+&--start {
+    width: 10rem;
+}
+
+&--end {
+    animation: .7s moveInLeft, 1s glowing infinite;
+    // animation: 1s glowing infinite;
+}
+
+&--flag {
+    animation: .5s moveInRight;
+    width: 5rem;
+  }
+
+
+
+
+  &--add-sub {
+      align-self: flex-end;
+      text-align: center;
+      height: 4rem;
+      padding: 1rem 2rem;
+      text-transform: uppercase;
+      color: $color-ternary2;
+      border: 2px solid $color-ternary2;
+      border-radius: 4px;
+      background-color: #fff;
+      transition: all .2s;
+
+      &:hover {
+      color: #fff;
+      background-color: $color-ternary2;
+
+      }
+  }
+}

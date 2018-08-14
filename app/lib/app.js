@@ -78,20 +78,22 @@ export default class App {
 
 
         ///////////////////////////////////////////
-        // const builder = document.querySelector(".builder__inputs");
-        // // const scrollEnd =
-        // // builder.scrollHeight - builder.scrollTop - builder.clientHeight;
+        const builder = document.querySelector(".builder");
+        // const scrollEnd =
+        // builder.scrollHeight - builder.scrollTop - builder.clientHeight;
 
-        // const scrollEnd = builder.scrollHeight - builder.scrollTop === builder.clientHeight;
+
+        // PROBLEM: after rerender the scrollTop === 0, so alle the calcs make no sense
+        const scrollEnd = builder.scrollHeight + builder.scrollTop === builder.clientHeight;
         
-        // console.log(
-        //   builder.scrollHeight,
-        //   builder.scrollTop,
-        //   builder.clientHeight,
-        //   builder.offsetHeight
-        // );
+        console.log(
+          builder.scrollHeight,
+          builder.scrollTop,
+          builder.clientHeight,
+          builder.offsetHeight
+        );
         
-        // console.log(scrollEnd);
+        console.log(scrollEnd);
         ///////////////////////////////////////////
         
         

@@ -71,30 +71,63 @@ export default class Builder {
       callback(parentInput);
     };
 
-    const getSub = function get(i, callback) {
-      // callback(i);
-      // i.subInputs && i.subInputs.length > 0 && get(i.subInputs, callback);
-      callback(i);
-      i.subInputs &&
-        i.subInputs.length > 0 &&
-        i.subInputs.map((temp, ii) => {
-          temp.serialNumber = `${i.serialNumber}.${ii}`;
-          // temp.condType = i.type; TODOOOOO
+    // const getSub = function get(i, callback) {
+
+    //   callback(i);
+    //   i.subInputs &&
+    //     i.subInputs.length > 0 &&
+    //     i.subInputs.map((temp, ii) => {
+    //       temp.serialNumber = `${i.serialNumber}.${ii}`;
+    //       temp.parentType = i.type;
+    //       get(temp, callback);
+    //       // callback(temp);
+    //     });
+    // };
+
+    // const coreInputTemplate = coreInput => {
+    //   let subInputs = "";
+
+    //   coreInput.subInputs.map((si, index) => {
+    //     si.serialNumber = `${coreInput.serialNumber}.${index}`;
+    //     getSub(coreInput, si, function(temp) {
+    //       // subInputs += `<div>${temp.id || "NI MA"}: ${temp.question}</div>`;
+    //       subInputs += subInputTemplate(temp);
+    //     });
+    //   });
+
+    //////////////////////////////////
+
+    const getSub = function get(core, callback) {
+      // callback(core);
+
+      // si.serialNumber = `${core.serialNumber}.${index}`;
+
+      core.subInputs &&
+        core.subInputs.length > 0 &&
+        core.subInputs.map((temp, ii) => {
+          temp.serialNumber = `${core.serialNumber}.${ii}`;
+          temp.parentType = core.type;
+          callback(temp);
           get(temp, callback);
-          // callback(temp);
         });
     };
 
     const coreInputTemplate = coreInput => {
-      let subInputs = "";
+      // coreInput.subInputs.map((si, index) => {
+      //   si.serialNumber = `${coreInput.serialNumber}.${index}`;
+      //   getSub(si, function(temp) {
+      //     // subInputs += `<div>${temp.id || "NI MA"}: ${temp.question}</div>`;
+      //     subInputs += subInputTemplate(temp);
+      //   });
+      // });
 
-      coreInput.subInputs.map((si, index) => {
-        si.serialNumber = `${coreInput.serialNumber}.${index}`;
-        getSub(si, function(temp) {
-          // subInputs += `<div>${temp.id || "NI MA"}: ${temp.question}</div>`;
-          subInputs += subInputTemplate(temp);
-        });
+      let subInputs = "";
+      debugger;
+      getSub(coreInput, function(sub) {
+        subInputs += subInputTemplate(sub);
       });
+
+      ///////////////////////////////////////
 
       return `
           <div class="input input__core" data-id="${coreInput.id}">
@@ -109,16 +142,19 @@ export default class Builder {
 
 
             <div class="input__question input__question--core">
-              <input type="text" name="question${coreInput.serialNumber}"          placeholder="Enter the question..." value="${coreInput.question ||
-                       ""}" required data-validation-error="*Required">
-              <label for="question${coreInput.serialNumber}">Enter the question...</label>
+              <input type="text" name="question${
+                coreInput.serialNumber
+              }"          placeholder="Enter the question..." value="${coreInput.question ||
+        ""}" required data-validation-error="*Required">
+              <label for="question${
+                coreInput.serialNumber
+              }">Enter the question...</label>
               <span class="input__error" aria-live="polite"></span>
             </div>
 
             <div class="input__type input__type--core">
-              Type: <select name="question${coreInput.serialNumber || ""}" data-val="${
-                            coreInput.type
-                             }" required>
+              Type: <select name="question${coreInput.serialNumber ||
+                ""}" data-val="${coreInput.type}" required>
                       <option value="input" ${
                         coreInput.type === "input" ? "selected" : ""
                       }>Text</option>
@@ -146,6 +182,64 @@ export default class Builder {
     };
 
     const subInputTemplate = subInput => {
+      let conditionTemplate = "";
+
+      if (subInput.parentType === "input") {
+        conditionTemplate = `
+        <select readonly required name="condType${subInput.serialNumber ||
+          ""}" data-val="${subInput.conditionType}">
+                <option value="input" selected>Equals</option>
+
+              </select>
+              <input type="${subInput.conditionType}" name="condType${
+          subInput.serialNumber
+        }" placeholder="Enter the matching answear..." value="${subInput.conditionAnswear ||
+          ""}" required data-validation-error="*Required">
+                <label for="condType${subInput.serialNumber}">Match: </label>
+          <span class="input__error" aria-live="polite"></span>`;
+
+
+      } else if (subInput.parentType === "radio") {
+        conditionTemplate = `
+        
+        <select required name="condType${subInput.serialNumber ||
+          ""}" data-val="${subInput.conditionType}">
+                <option value="input" selected>Equals</option>
+
+              </select>
+        <select required name="condType${subInput.serialNumber ||
+          ""}" data-val="${subInput.conditionType}">
+                <option value="yes" ${
+                  subInput.conditionType === "yes" ? "selected" : ""
+                }>Yes</option>
+                <option value="no" ${
+                  subInput.conditionType === "no" ? "selected" : ""
+                }>No</option>
+              </select>
+`;
+      } else if (subInput.parentType === "number") {
+        conditionTemplate = `
+
+        <select required name="condType${subInput.serialNumber ||
+          ""}" data-val="${subInput.conditionType}">
+                <option value="lt" ${
+                  subInput.conditionType === "lt" ? "selected" : ""
+                }>Less than</option>
+                <option value="eq" ${
+                  subInput.conditionType === "eq" ? "selected" : ""
+                }>Equals</option>
+                <option value="gt" ${
+                  subInput.conditionType === "gt" ? "selected" : ""
+                }>Greater than</option>
+              </select>
+              <input type="${subInput.parentType}" name="condType${
+          subInput.serialNumber
+        }" placeholder="Enter the matching answear..." value="${subInput.conditionAnswear ||
+          ""}" required data-validation-error="*Required">`;
+      } else {
+        conditionTemplate = "shiet";
+      }
+
       return `
         <div class="input input__sub input__sub-${
           subInput.serialNumber.length
@@ -162,33 +256,15 @@ export default class Builder {
 
         <div class="input__condition">
         
-        Condition
-        <select required name="condType${subInput.serialNumber ||
-          ""}" data-val="${subInput.conditionType}">
-                <option value="input" ${
-                  subInput.conditionType === "input" ? "selected" : ""
-                }>Text</option>
-                <option value="radio" ${
-                  subInput.conditionType === "radio" ? "selected" : ""
-                }>Yes/No</option>
-                <option value="number" ${
-                  subInput.conditionType === "number" ? "selected" : ""
-                }>Number</option>
-              </select>
-              <input type="${subInput.conditionType}" name="condType${
-        subInput.serialNumber
-      }" placeholder="Enter the matching answear..." value="${subInput.conditionAnswear ||
-        ""}" required data-validation-error="*Required">
-                <label for="condType${subInput.serialNumber}">Match: </label>
-          <span class="input__error" aria-live="polite"></span>
+          ${conditionTemplate}
 
         </div>
         
         
         <div class="input__question">
         <input type="text" name="question${
-        subInput.serialNumber
-      }" placeholder="Enter the question..." value="${subInput.question ||
+          subInput.serialNumber
+        }" placeholder="Enter the question..." value="${subInput.question ||
         ""}" required data-validation-error="*Required">
           <label for="question${subInput.serialNumber}">Question: </label>
           <span class="input__error" aria-live="polite"></span>
@@ -261,8 +337,6 @@ export default class Builder {
     const matchesActual = builderHTML.match(/<(input|select)\s+[\S\s]*?>/gi);
     const matchesLast = this.lastResult.match(/<(input|select)\s+[\S\s]*?>/gi);
 
-
-
     const renderInfo = {
       newCoreAdded: false,
       firstInput: matchesLast === null,
@@ -306,7 +380,6 @@ export default class Builder {
       //  focus on the first input
       console.log("nah");
     }
-
 
     this.lastResult = builderHTML;
 
@@ -389,7 +462,9 @@ export default class Builder {
               const msg =
                 element.dataset.validationError || "sth bad happened 🙆‍♀️";
               element.nextElementSibling.nextElementSibling.innerHTML = `${msg}`;
-              element.nextElementSibling.nextElementSibling.classList.add('util-active-block');
+              element.nextElementSibling.nextElementSibling.classList.add(
+                "util-active-block"
+              );
               freeToGo = false;
             }
           }
