@@ -46,62 +46,19 @@ export default class Builder {
   }
 
   // component's view
-  // make it return a promise!
+  // make it returning a promise!
   render(modelParam) {
+
+
     // TODO: focus on the last added element
     // idea:
     // 1. compare the lastly rendered html with the new one (this should result in the newly added div)
     // 2. get the input el from the div obtained above
     // input.focus()
 
-    // 👇🖖🤘 get it right!
-    const getSubInputs = function getSub(parentInput, callback) {
-      console.log("^^ getSubInput");
-      // callback(parentInput.subInputs);
-      // if there are subInputs for parent, get'em all!
 
-      // callback(parentInput.subInputs, callback);
-      // parentInput= parentInput.subInputs;
-
-      while (parentInput.subInputs) {
-        getSub(parentInput.subInputs, callback);
-        parentInput = parentInput.subInputs;
-      }
-
-      callback(parentInput);
-    };
-
-    // const getSub = function get(i, callback) {
-
-    //   callback(i);
-    //   i.subInputs &&
-    //     i.subInputs.length > 0 &&
-    //     i.subInputs.map((temp, ii) => {
-    //       temp.serialNumber = `${i.serialNumber}.${ii}`;
-    //       temp.parentType = i.type;
-    //       get(temp, callback);
-    //       // callback(temp);
-    //     });
-    // };
-
-    // const coreInputTemplate = coreInput => {
-    //   let subInputs = "";
-
-    //   coreInput.subInputs.map((si, index) => {
-    //     si.serialNumber = `${coreInput.serialNumber}.${index}`;
-    //     getSub(coreInput, si, function(temp) {
-    //       // subInputs += `<div>${temp.id || "NI MA"}: ${temp.question}</div>`;
-    //       subInputs += subInputTemplate(temp);
-    //     });
-    //   });
-
-    //////////////////////////////////
 
     const getSub = function get(core, callback) {
-      // callback(core);
-
-      // si.serialNumber = `${core.serialNumber}.${index}`;
-
       core.subInputs &&
         core.subInputs.length > 0 &&
         core.subInputs.map((temp, ii) => {
@@ -113,16 +70,9 @@ export default class Builder {
     };
 
     const coreInputTemplate = coreInput => {
-      // coreInput.subInputs.map((si, index) => {
-      //   si.serialNumber = `${coreInput.serialNumber}.${index}`;
-      //   getSub(si, function(temp) {
-      //     // subInputs += `<div>${temp.id || "NI MA"}: ${temp.question}</div>`;
-      //     subInputs += subInputTemplate(temp);
-      //   });
-      // });
 
       let subInputs = "";
-      debugger;
+      
       getSub(coreInput, function(sub) {
         subInputs += subInputTemplate(sub);
       });
@@ -200,20 +150,24 @@ export default class Builder {
 
 
       } else if (subInput.parentType === "radio") {
+        subInput.conditionType = 'eq';
         conditionTemplate = `
         
         <select required name="condType${subInput.serialNumber ||
           ""}" data-val="${subInput.conditionType}">
-                <option value="input" selected>Equals</option>
+                <option value="eq" ${
+                  subInput.conditionType === "eq" ? "selected" : ""
+                } >Equals</option>
+              </select> 
 
-              </select>
+
         <select required name="condType${subInput.serialNumber ||
-          ""}" data-val="${subInput.conditionType}">
+          ""}" data-val="${subInput.conditionAnswear}">
                 <option value="yes" ${
-                  subInput.conditionType === "yes" ? "selected" : ""
+                  subInput.conditionAnswear === "yes" ? "selected" : ""
                 }>Yes</option>
                 <option value="no" ${
-                  subInput.conditionType === "no" ? "selected" : ""
+                  subInput.conditionAnswear === "no" ? "selected" : ""
                 }>No</option>
               </select>
 `;
@@ -239,6 +193,8 @@ export default class Builder {
       } else {
         conditionTemplate = "shiet";
       }
+
+
 
       return `
         <div class="input input__sub input__sub-${
@@ -337,6 +293,8 @@ export default class Builder {
     const matchesActual = builderHTML.match(/<(input|select)\s+[\S\s]*?>/gi);
     const matchesLast = this.lastResult.match(/<(input|select)\s+[\S\s]*?>/gi);
 
+    debugger;
+
     const renderInfo = {
       newCoreAdded: false,
       firstInput: matchesLast === null,
@@ -354,6 +312,7 @@ export default class Builder {
         // check if sub-input from actual state exists in previous state
         const isFound = matchesLast.some((arrEl2, i) => {
           if (arrEl1 === arrEl2) {
+            // found? not good... maybe next one?
             temp = matchesLast[i + 1];
             return true;
           } else {
@@ -507,8 +466,6 @@ export default class Builder {
 
       const btnAddSub = e.target.matches(".btn--add-sub");
       if (btnAddSub) {
-        // const inputId = e.target.closest("div");
-        // inputId.insertAdjacentHTML("afterend", `<div> haloooooo</div>`);
         handleAddSubInput(e);
       }
 
@@ -566,7 +523,7 @@ export default class Builder {
       coreInput.question = updatedInput;
       coreInput.type = updatedType;
 
-      return { coreInput, index };
+      return { updatedCore: coreInput, index };
     };
 
     const updateSub = (e, subSerialNumber) => {
@@ -591,7 +548,7 @@ export default class Builder {
         valuesFromUI
       );
 
-      return { coreInput, index };
+      return { updatedCore, index };
     };
 
     // ideas for making this better for UX:
@@ -619,7 +576,7 @@ export default class Builder {
           sliceToUpdate = updateSub(e, closestDiv.parentNode.dataset.serial);
         }
 
-        actualState[sliceToUpdate.index] = sliceToUpdate.coreInput;
+        actualState[sliceToUpdate.index] = sliceToUpdate.updatedCore;
 
         // Two versions:
         // 1. setState() commented => no real-time view/state update => data taken from localStorage every time

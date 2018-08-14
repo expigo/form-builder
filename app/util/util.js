@@ -33,8 +33,6 @@ export const getInputValues = (nodes) => {
   const temp = [];
 
 
-  debugger;
-
   if(nodes.length) {
     for(let i of nodes) {
       for(let element of DOMtraversal(i)) {
@@ -65,12 +63,6 @@ export const getInputValues = (nodes) => {
   );
 
   return values;
-  // return {
-  //   condType: values[0],
-  //   condAnswear: values[1],
-  //   inputQuestion: values[2],
-  //   inputType: values[3],
-  // }
 };
 
 export const splitExclusive = stringToSplit => index => [

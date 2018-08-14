@@ -32,21 +32,6 @@ export default class Inputs {
     conditionAnswear = "",
     question = "",
     type = "",
-    // subInputs = [
-    //   {
-    //     question: "ziomek",
-    //     subInputs: [
-    //       {
-    //         question: "xEE",
-    //         subInputs: []
-    //       }
-    //     ]
-    //   },
-    //   {
-    //     question: "deeper!",
-    //     subInputs: []
-    //   }
-    // ]
     subInputs = []
   ) {
     const { coreInput, index } = this.getCoreInputWithIndexById(coreId);
@@ -71,7 +56,7 @@ export default class Inputs {
   }
 
   static findInputByPosition(coreInput, position) {
-    debugger;
+  
     if (position) {
       // TODO: try with monad
 
@@ -100,7 +85,6 @@ export default class Inputs {
 
   // set the nex value
   setNextGenValue(nextVal) {
-    // this.nextSerialNumber.next(nextVal);
     this.nextSerialNumber = seqNumGen(nextVal);
     // this.nextSerialNumber.next(nextVal);
   }
@@ -145,5 +129,8 @@ export default class Inputs {
     objToUpdate.conditionAnswear = valuesArr[1];
     objToUpdate.question = valuesArr[2];
     objToUpdate.type = valuesArr[3];
+
+
+    return coreInput;
   }
 }

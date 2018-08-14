@@ -65,17 +65,17 @@ export default class App {
 
       // junk END
 
-
-      debugger;
+  debugger;
 
       // focus on the last changed input (if there is one)
       if (changedInputName) {
         // unfortunately there is a quirk: https://stackoverflow.com/questions/511088/use-javascript-to-place-cursor-at-end-of-text-in-text-input-element
         const inputToBeFocusedOn = document.querySelector(
-          `input[name="${changedInputName}"]`
+          `[name="${changedInputName}"]`
         );
-        
 
+        // TODO: think of sth else in case when parent.type === 'radio'
+        
 
         ///////////////////////////////////////////
         const builder = document.querySelector(".builder");
@@ -83,7 +83,7 @@ export default class App {
         // builder.scrollHeight - builder.scrollTop - builder.clientHeight;
 
 
-        // PROBLEM: after rerender the scrollTop === 0, so alle the calcs make no sense
+        // PROBLEM: after rerender the scrollTop === 0, so all the calcs make no sense
         const scrollEnd = builder.scrollHeight + builder.scrollTop === builder.clientHeight;
         
         console.log(
@@ -97,7 +97,7 @@ export default class App {
         ///////////////////////////////////////////
         
         
-        if (newCoreAdded) {
+        if (newCoreAdded && false) {
           var scroll = new Scroll(document.querySelector(".builder"));
           scroll
             .toElement(inputToBeFocusedOn.closest('div[data-id]'), {
@@ -121,17 +121,13 @@ export default class App {
   }
 
   // to track changes in the state
-  // contenteditable on the actual form, changes reflected on the model
+  // contenteditable on the actual form, changes reflected on the model (two-way binding)
   // well, maybe someday... 😁😁
   proxify(model) {
     const self = this;
     return new Proxy(model, {
       set(target, prop, value) {
-        // console.log(
-        //   `[SET]target: ${JSON.stringify(
-        //     target
-        //   )}\n prop: ${prop}\n value:${JSON.stringify(value)}`
-        // );
+
         if (prop === "length") {
           console.log(
             `[SET]target: ${JSON.stringify(
