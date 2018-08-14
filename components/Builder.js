@@ -14,6 +14,7 @@ export default class Builder {
     this.model = {
       coreInputs: new Inputs()
     };
+    this.initialized = false;
 
     window.addEventListener("DOMContentLoaded", e => {
       console.log("^^loaded");
@@ -29,7 +30,19 @@ export default class Builder {
 
   // a method for retrieving
   getState() {
-    const state = JSON.parse(localStorage.getItem("form-builder"));
+    
+    function parse(str){
+      return _.attempt(JSON.parse.bind(null, str));
+  }
+
+
+    const state = parse(localStorage.getItem("form-builder"), 'hoho');
+
+    if (_.isError(state)) {
+      state = [];
+    }
+
+    console.log(state);
 
     if (state) {
       this.setState(state);
@@ -293,7 +306,7 @@ export default class Builder {
     const matchesActual = builderHTML.match(/<(input|select)\s+[\S\s]*?>/gi);
     const matchesLast = this.lastResult.match(/<(input|select)\s+[\S\s]*?>/gi);
 
-    debugger;
+
 
     const renderInfo = {
       newCoreAdded: false,
@@ -371,6 +384,8 @@ export default class Builder {
     };
 
     const handleAddInput = (inputToAdd = {}) => {
+      debugger;
+      console.log('%%%');
       // copy the actual state of state
       let actualState = this.model.coreInputs.state.slice(); //👈👈
       // create new core input
@@ -448,10 +463,18 @@ export default class Builder {
     };
 
     /* 🐱‍👤 EVENT HANDLERS 👤 */
+    // the problem is that whenever the whole component is rerendered, the constructor is run again, adding more and more event listeners 
+    // TODO: find out if self-memoizing function with flag set to false after first render is good enough approach
 
-    // handle adding new core question with 'add' btn
-    document.querySelector(".app").addEventListener("click", e => {
-      // e.preventDefault();
+    if(!this.initialized) {
+
+      
+      // handle adding new core question with 'add' btn
+      document.querySelector(".app").addEventListener("click", e => {
+        e.stopPropagation();
+      e.preventDefault();
+      console.log(e);
+      console.log('app event!');
       const btnAdd = e.target.matches(".btn--add");
       if (btnAdd) {
         handleAddInput();
@@ -479,14 +502,14 @@ export default class Builder {
         const [parentPosition, indexToDelete] = splitExclusive(position)(
           position.lastIndexOf(".")
         );
-
+        
         // 3. the the core input to be updated
         const coreInputId = e.target.closest(".input__core").dataset.id;
         const {
           coreInput,
           index
         } = this.model.coreInputs.getCoreInputWithIndexById(coreInputId);
-
+        
         // 4. get the subToDelete parent to update
         const parentToUpdate = Inputs.findInputByPosition(
           coreInput,
@@ -495,7 +518,7 @@ export default class Builder {
 
         // 5. delete the sub basing on the data fetched before
         parentToUpdate.subInputs.splice(indexToDelete, 1);
-
+        
         // 6. update state
         let actualState = this.model.coreInputs.state.slice();
         actualState[index] = coreInput;
@@ -510,7 +533,7 @@ export default class Builder {
         coreInput,
         index
       } = this.model.coreInputs.getCoreInputWithIndexById(input.dataset.id);
-
+      
       // get values from the inputs on the page
       const [updatedInput, updatedType] = getInputValues(
         // e.target.parentNode.children
@@ -518,14 +541,14 @@ export default class Builder {
         // input
         e.target.parentNode.parentNode.children
       );
-
+      
       // assign new values
       coreInput.question = updatedInput;
       coreInput.type = updatedType;
-
+      
       return { updatedCore: coreInput, index };
     };
-
+    
     const updateSub = (e, subSerialNumber) => {
       const coreInputId = e.target.closest("div[data-id]").dataset.id;
 
@@ -550,7 +573,7 @@ export default class Builder {
 
       return { updatedCore, index };
     };
-
+    
     // ideas for making this better for UX:
     // - handling two different events separately: one for input (eg. focusout), one for select tag (like input) (caveat: the number of event handlers will grow with the new inputs type) ❌
     // - try different events, and select one that fits best ❌
@@ -566,8 +589,8 @@ export default class Builder {
         const closestDiv = e.target.closest("div");
 
         let sliceToUpdate = {};
-        debugger;
-
+        
+        
         // if closestInput el. id attr. exists => coreInput
         // 😑🙄 TODO: i don't like the way it is hardcoded
         if (closestDiv.parentNode.dataset.id) {
@@ -575,21 +598,24 @@ export default class Builder {
         } else {
           sliceToUpdate = updateSub(e, closestDiv.parentNode.dataset.serial);
         }
-
+        
         actualState[sliceToUpdate.index] = sliceToUpdate.updatedCore;
-
+        
         // Two versions:
         // 1. setState() commented => no real-time view/state update => data taken from localStorage every time
         // 1. setState() uncommented => real-time view/state update => view rerender every state change
         this.setState(actualState);
         // TODO: use it to implement controlled input
-
+        
         this.persistState();
       }
     };
-
+    
     document
       .querySelector(".app")
       .addEventListener("input", _.debounce(handleInputChange, 200));
+
+      this.initialized = true;
+    }
   }
 }

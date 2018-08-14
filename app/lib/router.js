@@ -6,6 +6,7 @@ export default class Router {
 
         this.switchComponent = this.switchComponent.bind(this);
         ['hashchange', 'DOMContentLoaded'].forEach(e => window.addEventListener(e, this.switchComponent));
+
     }
 
     addRoute(name, path) {
@@ -13,10 +14,14 @@ export default class Router {
     }
 
     switchComponent() {
+
         console.log('swtching components...');
         const hash = window.location.hash;
-        // const route = this.paths.filter(path => console.log(path))
-        const route = this.paths[0];
+        console.log(hash);
+        const route = this.paths.filter(path => hash.match(new RegExp(path.path)))[0];
+        console.log(route);
+        console.log(this.paths);
+        // const route = this.paths[0];
 
         if(route) {
             this.app.renderComponent(route.name);

@@ -14,7 +14,7 @@ export default class App {
     console.log(">> nah just adding a component");
     this.componentByName[component.name] = component;
 
-    if (component.model.coreInputs) {
+    if (component.model && component.model.coreInputs) {
       component.model = this.proxify(component.model);
     }
   }
@@ -23,7 +23,10 @@ export default class App {
     //   console.table(this.componentByName);
     this.currentComponent = this.componentByName[name];
 
-    if (this.currentComponent) {
+    console.log(this.componentByName);
+    console.log(this.currentComponent);
+
+    if (this.currentComponent && this.currentComponent.model) {
       this.currentComponent.controller(this.currentComponent.model);
     }
 

@@ -5,6 +5,7 @@ import App from './lib/app';
 import Router from './lib/router';
 
 import Builder from '../components/Builder'
+import FormPreview from "../components/FormPreview";
 
 
 // [1, 2, 3].map(el => console.log(el));
@@ -22,8 +23,10 @@ const router = new Router(app);
 // app.addComponent(builderComponent);
 
 app.addComponent(new Builder());
+app.addComponent(new FormPreview());
 
-router.addRoute('builder', '#/Builder');
+router.addRoute('builder', '#/builder');
+router.addRoute('preview', '#/preview');
 
 
 // builderComponent.model.coreInputs.push(new CoreInput());
