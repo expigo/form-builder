@@ -1,66 +1,77 @@
 .btn {
-    cursor: pointer;
+  cursor: pointer;
 
   &--remove {
     display: none;
     align-self: flex-end;
+    width: 2rem;
+    height: 2rem;
+    border: 0;
   }
 
-
-  &--remove {
-      width: 2rem;
-      height: 2rem;
-      border: 0;
+  &--remove-sub {
+    display: none;
+    align-self: flex-end;
+    width: 2rem;
+    height: 2rem;
+    border: 0;
   }
-
 
   &--add {
+    outline: none;
+    border: none;
     position: sticky;
     top: 1rem;
     height: 5rem;
     border-radius: 1000%;
-    background: $gradient6;
+    background: $color-ternary5;
     font-size: 3rem;
-    color: $color-ternary2;
+    color: #fff;
     margin: 1rem;
     align-self: center;
     width: 5rem;
-    transition: all .7s;
-}
+    transition: animation 0.7s;
+    box-shadow: lighten($color-ternary5, 20%) 0px 6px;
 
-&--start {
+    &:hover {
+      top: 2px;
+      box-shadow: lighten($color-ternary5, 20%) 0px 4px;
+    }
+
+    &:active {
+      box-shadow: lighten($color-ternary5, 20%) 0px 0px;
+    }
+  }
+
+  &--start {
     width: 10rem;
-}
+  }
 
-&--end {
-    animation: .7s moveInLeft, 1s glowing infinite;
+  &--end {
+    animation: 0.7s moveInLeft, 1s glowing infinite;
     // animation: 1s glowing infinite;
-}
+  }
 
-&--flag {
-    animation: .5s moveInRight;
+  &--flag {
+    animation: 0.5s moveInRight;
     width: 5rem;
   }
 
-
-
-
   &--add-sub {
-      align-self: flex-end;
-      text-align: center;
-      height: 4rem;
-      padding: 1rem 2rem;
-      text-transform: uppercase;
-      color: $color-ternary2;
-      border: 2px solid $color-ternary2;
-      border-radius: 4px;
-      background-color: #fff;
-      transition: all .2s;
+    align-self: flex-end;
+    text-align: center;
+    height: 4rem;
+    padding: 1rem 2rem;
+    text-transform: uppercase;
+    color: $color-ternary2;
+    border: 2px solid $color-ternary2;
+    border-radius: 4px;
+    background-color: #fff;
+    transition: all 0.2s;
 
-      &:hover {
+    &:hover {
       color: #fff;
       background-color: $color-ternary2;
-
-      }
+    }
   }
 }

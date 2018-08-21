@@ -3,6 +3,7 @@ import { seqNumGen } from "../util/util";
 
 /**
  * ADT for storing all the inputs
+ * TODO: _.mapKeys(this.state, 'id')
  */
 export default class Inputs {
   constructor() {

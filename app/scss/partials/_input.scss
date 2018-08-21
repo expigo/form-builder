@@ -35,18 +35,16 @@
 
   &__question {
     // display: flex;
+    padding: 2rem;
+    position: relative;
 
-    
     & > * {
       flex: 1;
     }
 
-    padding: 2rem;
-    position: relative;
-
     input {
       width: 75%;
-      height: 3rem;
+      height: 4rem;
       border-radius: 3px;
 
       // &:invalid {
@@ -73,6 +71,34 @@
     input:required + .help-text::before {
       content: "*Required";
     }
+
+    &--core {
+      input {
+
+        width: 100%;
+
+        &:-webkit-autofill {
+          box-shadow: 0 0 0px 1000px $color-ternary2 inset;
+          -webkit-text-fill-color: white !important;
+        }
+      }
+    }
+  }
+
+  &__type {
+    display: flex;
+    padding: 2rem;
+
+    & > * {
+      flex: 1;
+    }
+
+    select {
+      margin: 0 5rem;
+      width: 75%;
+      padding: 1rem;
+      text-align: center;
+    }
   }
 
   &__condition {
@@ -87,13 +113,15 @@
     }
 
     select {
-      width: 5rem;
+      width: 15rem;
+      padding: 1rem;
+      margin: 0 3rem;
     }
 
     label {
       position: absolute;
       top: 0;
-      left: 2rem;
+      left: 25rem;
       font-size: 1rem;
       opacity: 1;
       transform: translateY(0);
@@ -101,7 +129,7 @@
     }
 
     input {
-      width: 75%;
+      // width: 75%;
       height: 3rem;
       border-radius: 3px;
 
@@ -117,24 +145,15 @@
     }
   }
 
-  &__type {
-    display: flex;
-    padding: 2rem;
-
-    & > * {
-      flex: 1;
-    }
-
-
-    select {
-      width: 75%;
-    }
-  }
-
   &__error {
     font-size: 1.2rem;
     color: red;
     display: none;
+  }
+
+  span {
+    display: inline-block;
+    text-align: center;
   }
 
   // & input {
@@ -150,6 +169,17 @@
 
   &__sub {
     border-radius: 5px;
+
+    &:hover {
+      & .btn {
+        &--remove-sub {
+          display: inline;
+          position: absolute;
+          top: 1rem;
+          right: 1rem;
+        }
+      }
+    }
   }
 
   &:hover {
@@ -167,7 +197,7 @@
 @for $i from 3 through 78 {
   $margin-left: 10 * $i;
 
-  .input__sub-#{$i} {
+  .input__sub--#{$i} {
     margin-left: $margin-left + 0px;
     background-color: darken(lighten($color-ternary2, 25%), percentage($i/100));
     color: lighten(black, percentage($i/78));

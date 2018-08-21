@@ -51,6 +51,8 @@ export default class App {
       if (btn && !btn.classList.contains("btn--flag")) {
         if (firstInput) {
           btn.classList.add("btn--flag");
+
+          // try with transitionend/animationend event
           setTimeout(function() {
             btn.classList.remove("btn--start");
           }, 1);
@@ -73,11 +75,16 @@ export default class App {
       // focus on the last changed input (if there is one)
       if (changedInputName) {
         // unfortunately there is a quirk: https://stackoverflow.com/questions/511088/use-javascript-to-place-cursor-at-end-of-text-in-text-input-element
-        const inputToBeFocusedOn = document.querySelector(
-          `[name="${changedInputName}"]`
+        let inputToBeFocusedOn = document.querySelector(
+          `input[name="${changedInputName}"]`
         );
 
         // TODO: think of sth else in case when parent.type === 'radio'
+        if(!inputToBeFocusedOn) {
+          inputToBeFocusedOn = document.querySelector(
+            `[name="${changedInputName}"]`
+          );
+        }
         
 
         ///////////////////////////////////////////
@@ -125,7 +132,7 @@ export default class App {
 
   // to track changes in the state
   // contenteditable on the actual form, changes reflected on the model (two-way binding)
-  // well, maybe someday... 😁😁
+  // well, one day maybe... 😁😁
   proxify(model) {
     const self = this;
     return new Proxy(model, {

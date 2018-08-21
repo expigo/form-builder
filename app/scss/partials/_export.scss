@@ -1,0 +1,34 @@
+.export {
+    min-height: inherit;
+    max-height: inherit;
+    min-width: inherit;
+    max-width: inherit;
+
+    &__info {
+        text-transform: uppercase;
+        font-size: 2rem;
+        text-align: center;
+        font-weight: 700;
+    }
+    &__code {
+        min-width: 40rem;
+        max-width: 80rem;
+        min-height: 50rem;
+        max-height: 40rem;
+        margin: 0rem auto;
+        pre {
+            max-width: inherit;
+            max-height: inherit;
+            font-size: 1.5rem;
+            // margin: 5rem 0;
+            // padding: 5rem;
+            
+            code {
+                overflow: auto;
+                display: block;
+                max-width: inherit;
+                max-height: inherit;
+            }
+        }
+     }
+}

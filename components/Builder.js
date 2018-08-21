@@ -63,7 +63,7 @@ export default class Builder {
   render(modelParam) {
 
 
-    // TODO: focus on the last added element
+    // focus on the last added element
     // idea:
     // 1. compare the lastly rendered html with the new one (this should result in the newly added div)
     // 2. get the input el from the div obtained above
@@ -72,6 +72,9 @@ export default class Builder {
 
 
     const getSub = function get(core, callback) {
+      if(core.question === '') {
+        core.subInputs = [];
+      }
       core.subInputs &&
         core.subInputs.length > 0 &&
         core.subInputs.map((temp, ii) => {
@@ -111,12 +114,12 @@ export default class Builder {
         ""}" required data-validation-error="*Required">
               <label for="question${
                 coreInput.serialNumber
-              }">Enter the question...</label>
+              }">Question</label>
               <span class="input__error" aria-live="polite"></span>
             </div>
 
             <div class="input__type input__type--core">
-              Type: <select name="question${coreInput.serialNumber ||
+              <span>Type:</span> <select name="question${coreInput.serialNumber ||
                 ""}" data-val="${coreInput.type}" required>
                       <option value="input" ${
                         coreInput.type === "input" ? "selected" : ""
@@ -210,7 +213,7 @@ export default class Builder {
 
 
       return `
-        <div class="input input__sub input__sub-${
+        <div class="input input__sub input__sub--${
           subInput.serialNumber.length
         }" data-serial="${subInput.serialNumber}">
 
@@ -249,7 +252,6 @@ export default class Builder {
                   subInput.type === "number" ? "selected" : ""
                 }>Number</option>
                 </select>
-                <br>
                 
                 </div>
                 <button class="btn btn--add-sub">Add Sub-Input</button>
@@ -286,7 +288,7 @@ export default class Builder {
     `;
 
     // getting ready for finding the last updated/added input
-    // or maybe i should/ve store it in the state xD
+    // or maybe i should've store it in the state xD
     if (!this.lastResult) {
       console.log("#!");
       this.lastResult = builderHTML;
@@ -466,6 +468,7 @@ export default class Builder {
     // the problem is that whenever the whole component is rerendered, the constructor is run again, adding more and more event listeners 
     // TODO: find out if self-memoizing function with flag set to false after first render is good enough approach
 
+    // TODO: move the logic of initializing the component to App.js, since it is not a component responsibility to keep track whether it has been already initlized (maybe some kind of init() function called at the time of first component load)
     if(!this.initialized) {
 
       
@@ -580,6 +583,13 @@ export default class Builder {
     // throttle the function invocation ✔
     const handleInputChange = e => {
       console.log("TRIGGERED 😡😡😡");
+
+      debugger;
+      
+      // That's baaad 🙄
+      // TODO: isolate event listeners for specific handlers 
+      const isBuilderActive = document.querySelector('.builder');
+      if(!isBuilderActive) return;
 
       if (checkIfInput(e.target)) {
         // copy the actual state of state

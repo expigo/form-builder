@@ -131,7 +131,7 @@ var App = function () {
       console.log(">> nah just adding a component");
       this.componentByName[component.name] = component;
 
-      if (component.model.coreInputs) {
+      if (component.model && component.model.coreInputs) {
         component.model = this.proxify(component.model);
       }
     }
@@ -141,7 +141,10 @@ var App = function () {
       //   console.table(this.componentByName);
       this.currentComponent = this.componentByName[name];
 
-      if (this.currentComponent) {
+      console.log(this.componentByName);
+      console.log(this.currentComponent);
+
+      if (this.currentComponent && this.currentComponent.model) {
         this.currentComponent.controller(this.currentComponent.model);
       }
 
@@ -184,33 +187,32 @@ var App = function () {
 
         // junk END
 
-
         debugger;
 
         // focus on the last changed input (if there is one)
         if (changedInputName) {
           // unfortunately there is a quirk: https://stackoverflow.com/questions/511088/use-javascript-to-place-cursor-at-end-of-text-in-text-input-element
-          var inputToBeFocusedOn = document.querySelector("input[name=\"" + changedInputName + "\"]");
+          var inputToBeFocusedOn = document.querySelector("[name=\"" + changedInputName + "\"]");
+
+          // TODO: think of sth else in case when parent.type === 'radio'
+
 
           ///////////////////////////////////////////
-          // const builder = document.querySelector(".builder__inputs");
-          // // const scrollEnd =
-          // // builder.scrollHeight - builder.scrollTop - builder.clientHeight;
+          var builder = document.querySelector(".builder");
+          // const scrollEnd =
+          // builder.scrollHeight - builder.scrollTop - builder.clientHeight;
 
-          // const scrollEnd = builder.scrollHeight - builder.scrollTop === builder.clientHeight;
 
-          // console.log(
-          //   builder.scrollHeight,
-          //   builder.scrollTop,
-          //   builder.clientHeight,
-          //   builder.offsetHeight
-          // );
+          // PROBLEM: after rerender the scrollTop === 0, so all the calcs make no sense
+          var scrollEnd = builder.scrollHeight + builder.scrollTop === builder.clientHeight;
 
-          // console.log(scrollEnd);
+          console.log(builder.scrollHeight, builder.scrollTop, builder.clientHeight, builder.offsetHeight);
+
+          console.log(scrollEnd);
           ///////////////////////////////////////////
 
 
-          if (newCoreAdded) {
+          if (newCoreAdded && false) {
             var scroll = new _scrollJs2.default(document.querySelector(".builder"));
             scroll.toElement(inputToBeFocusedOn.closest('div[data-id]'), {
               duration: 1000,
@@ -232,8 +234,8 @@ var App = function () {
     }
 
     // to track changes in the state
-    // contenteditable on the actual form, changes reflected on the model
-    // well, maybe someday... 😁😁
+    // contenteditable on the actual form, changes reflected on the model (two-way binding)
+    // well, one day maybe... 😁😁
 
   }, {
     key: "proxify",
@@ -241,11 +243,7 @@ var App = function () {
       var self = this;
       return new Proxy(model, {
         set: function set(target, prop, value) {
-          // console.log(
-          //   `[SET]target: ${JSON.stringify(
-          //     target
-          //   )}\n prop: ${prop}\n value:${JSON.stringify(value)}`
-          // );
+
           if (prop === "length") {
             console.log("[SET]target: " + JSON.stringify(target) + "\n prop: " + prop + "\n value:" + JSON.stringify(value));
             self.updateView();
@@ -309,10 +307,16 @@ var Router = function () {
     }, {
         key: 'switchComponent',
         value: function switchComponent() {
+
             console.log('swtching components...');
             var hash = window.location.hash;
-            // const route = this.paths.filter(path => console.log(path))
-            var route = this.paths[0];
+            console.log(hash);
+            var route = this.paths.filter(function (path) {
+                return hash.match(new RegExp(path.path));
+            })[0];
+            console.log(route);
+            console.log(this.paths);
+            // const route = this.paths[0];
 
             if (route) {
                 this.app.renderComponent(route.name);
@@ -353,70 +357,67 @@ var _Builder = __webpack_require__(/*! ../components/Builder */ "./components/Bu
 
 var _Builder2 = _interopRequireDefault(_Builder);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _FormPreview = __webpack_require__(/*! ../components/FormPreview */ "./components/FormPreview.js");
 
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-// import { seqNumGen } from './util/sequentialNumberGenerator'
+var _FormPreview2 = _interopRequireDefault(_FormPreview);
+
+var _ExportView = __webpack_require__(/*! ../components/ExportView */ "./components/ExportView.js");
+
+var _ExportView2 = _interopRequireDefault(_ExportView);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // [1, 2, 3].map(el => console.log(el));
 // const arr = [1, 2, 3];
 // const iAmJavascriptES6 = () => console.log(...arr);
 // window.iAmJavascriptES6 = iAmJavascriptES6;
 
-var app = new _app2.default('.app');
+var app = new _app2.default(".app");
+// import { seqNumGen } from './util/sequentialNumberGenerator'
 
 var router = new _router2.default(app);
 
-// const builderComponent = new Builder();
-
-// app.addComponent(builderComponent);
-
 app.addComponent(new _Builder2.default());
+app.addComponent(new _FormPreview2.default());
+app.addComponent(new _ExportView2.default());
 
-router.addRoute('builder', '#/Builder');
-
-// builderComponent.model.coreInputs.push(new CoreInput());
-
+router.addRoute("builder", "#/builder");
+router.addRoute("preview", "#/preview");
+router.addRoute("export", "#/export");
 
 // handling the nav tab switching
 function handleClick(e) {
-    e.preventDefault();
+  e.preventDefault();
 
-    // console.log(e.target.innerHTML);
-    window.location.hash = '/' + e.target.innerHTML.toLowerCase();
+  // window.location.hash = `/${e.target.innerHTML.toLowerCase()}`;
 
-    if (!handleClick.lastSelected) {
-        handleClick.lastSelected = e.target;
-        handleClick.lastSelected.classList.add('active');
-        return;
-    }
-
-    if (e.target === handleClick.lastSelected) {
-        // e.target.classList.remove('active');
-        console.log('GOTYA ALREADY!');
-        return; // don't bother yourself anymore
-    }
-
-    handleClick.lastSelected.classList.remove('active');
-
-    e.target.classList.add('active');
-
+  if (!handleClick.lastSelected) {
     handleClick.lastSelected = e.target;
-    // const activeNow = e.target;
-    // console.dir(activeNow);
-};
+    handleClick.lastSelected.classList.add("active");
+    return;
+  }
 
-var sections = document.querySelectorAll('header a');
-[].concat(_toConsumableArray(sections)).forEach(function (section) {
-    return section.addEventListener('click', handleClick);
+  if (e.target === handleClick.lastSelected) {
+    // e.target.classList.remove('active');
+    console.log("GOTYA ALREADY!");
+    return; // don't bother yourself anymore
+  }
+
+  handleClick.lastSelected.classList.remove("active");
+
+  e.target.classList.add("active");
+
+  handleClick.lastSelected = e.target;
+}
+
+var sections = document.querySelectorAll("header a");
+sections.forEach(function (section) {
+  return section.addEventListener("click", handleClick);
 });
 
-// window.addEventListener('DOMContentLoaded', function() {
-//     window.location.hash = '';
-// })
+// window.addEventListener("DOMContentLoaded", handleClick);
 
-
-console.log('finito');
+console.log("finito");
 
 /***/ }),
 
@@ -520,7 +521,6 @@ var Inputs = function () {
   }, {
     key: "setNextGenValue",
     value: function setNextGenValue(nextVal) {
-      // this.nextSerialNumber.next(nextVal);
       this.nextSerialNumber = (0, _util.seqNumGen)(nextVal);
       // this.nextSerialNumber.next(nextVal);
     }
@@ -579,11 +579,13 @@ var Inputs = function () {
       objToUpdate.conditionAnswear = valuesArr[1];
       objToUpdate.question = valuesArr[2];
       objToUpdate.type = valuesArr[3];
+
+      return coreInput;
     }
   }], [{
     key: "findInputByPosition",
     value: function findInputByPosition(coreInput, position) {
-      debugger;
+
       if (position) {
         // TODO: try with monad
 
@@ -717,8 +719,6 @@ var getInputValues = exports.getInputValues = function getInputValues(nodes) {
 
   var temp = [];
 
-  debugger;
-
   if (nodes.length) {
     var _iteratorNormalCompletion = true;
     var _didIteratorError = false;
@@ -802,12 +802,6 @@ var getInputValues = exports.getInputValues = function getInputValues(nodes) {
   }, []);
 
   return values;
-  // return {
-  //   condType: values[0],
-  //   condAnswear: values[1],
-  //   inputQuestion: values[2],
-  //   inputType: values[3],
-  // }
 };
 
 var splitExclusive = exports.splitExclusive = function splitExclusive(stringToSplit) {
@@ -845,6 +839,7 @@ class Builder {
     this.model = {
       coreInputs: new _app_model_Inputs__WEBPACK_IMPORTED_MODULE_1___default.a()
     };
+    this.initialized = false;
 
     window.addEventListener("DOMContentLoaded", e => {
       console.log("^^loaded");
@@ -860,7 +855,18 @@ class Builder {
 
   // a method for retrieving
   getState() {
-    const state = JSON.parse(localStorage.getItem("form-builder"));
+
+    function parse(str) {
+      return lodash__WEBPACK_IMPORTED_MODULE_0___default.a.attempt(JSON.parse.bind(null, str));
+    }
+
+    const state = parse(localStorage.getItem("form-builder"), 'hoho');
+
+    if (lodash__WEBPACK_IMPORTED_MODULE_0___default.a.isError(state)) {
+      state = [];
+    }
+
+    console.log(state);
 
     if (state) {
       this.setState(state);
@@ -874,53 +880,34 @@ class Builder {
   }
 
   // component's view
-  // make it return a promise!
+  // make it returning a promise!
   render(modelParam) {
-    // TODO: focus on the last added element
+
+    // focus on the last added element
     // idea:
     // 1. compare the lastly rendered html with the new one (this should result in the newly added div)
     // 2. get the input el from the div obtained above
     // input.focus()
 
-    // 👇🖖🤘 get it right!
-    const getSubInputs = function getSub(parentInput, callback) {
-      console.log("^^ getSubInput");
-      // callback(parentInput.subInputs);
-      // if there are subInputs for parent, get'em all!
 
-      // callback(parentInput.subInputs, callback);
-      // parentInput= parentInput.subInputs;
-
-      while (parentInput.subInputs) {
-        getSub(parentInput.subInputs, callback);
-        parentInput = parentInput.subInputs;
-      }
-
-      callback(parentInput);
-    };
-
-    const getSub = function get(i, callback) {
-      // callback(i);
-      // i.subInputs && i.subInputs.length > 0 && get(i.subInputs, callback);
-      callback(i);
-      i.subInputs && i.subInputs.length > 0 && i.subInputs.map((temp, ii) => {
-        temp.serialNumber = `${i.serialNumber}.${ii}`;
-        // temp.condType = i.type; TODOOOOO
+    const getSub = function get(core, callback) {
+      core.subInputs && core.subInputs.length > 0 && core.subInputs.map((temp, ii) => {
+        temp.serialNumber = `${core.serialNumber}.${ii}`;
+        temp.parentType = core.type;
+        callback(temp);
         get(temp, callback);
-        // callback(temp);
       });
     };
 
     const coreInputTemplate = coreInput => {
+
       let subInputs = "";
 
-      coreInput.subInputs.map((si, index) => {
-        si.serialNumber = `${coreInput.serialNumber}.${index}`;
-        getSub(si, function (temp) {
-          // subInputs += `<div>${temp.id || "NI MA"}: ${temp.question}</div>`;
-          subInputs += subInputTemplate(temp);
-        });
+      getSub(coreInput, function (sub) {
+        subInputs += subInputTemplate(sub);
       });
+
+      ///////////////////////////////////////
 
       return `
           <div class="input input__core" data-id="${coreInput.id}">
@@ -961,8 +948,46 @@ class Builder {
     };
 
     const subInputTemplate = subInput => {
+      let conditionTemplate = "";
+
+      if (subInput.parentType === "input") {
+        conditionTemplate = `
+        <select readonly required name="condType${subInput.serialNumber || ""}" data-val="${subInput.conditionType}">
+                <option value="input" selected>Equals</option>
+
+              </select>
+              <input type="${subInput.conditionType}" name="condType${subInput.serialNumber}" placeholder="Enter the matching answear..." value="${subInput.conditionAnswear || ""}" required data-validation-error="*Required">
+                <label for="condType${subInput.serialNumber}">Match: </label>
+          <span class="input__error" aria-live="polite"></span>`;
+      } else if (subInput.parentType === "radio") {
+        subInput.conditionType = 'eq';
+        conditionTemplate = `
+        
+        <select required name="condType${subInput.serialNumber || ""}" data-val="${subInput.conditionType}">
+                <option value="eq" ${subInput.conditionType === "eq" ? "selected" : ""} >Equals</option>
+              </select> 
+
+
+        <select required name="condType${subInput.serialNumber || ""}" data-val="${subInput.conditionAnswear}">
+                <option value="yes" ${subInput.conditionAnswear === "yes" ? "selected" : ""}>Yes</option>
+                <option value="no" ${subInput.conditionAnswear === "no" ? "selected" : ""}>No</option>
+              </select>
+`;
+      } else if (subInput.parentType === "number") {
+        conditionTemplate = `
+
+        <select required name="condType${subInput.serialNumber || ""}" data-val="${subInput.conditionType}">
+                <option value="lt" ${subInput.conditionType === "lt" ? "selected" : ""}>Less than</option>
+                <option value="eq" ${subInput.conditionType === "eq" ? "selected" : ""}>Equals</option>
+                <option value="gt" ${subInput.conditionType === "gt" ? "selected" : ""}>Greater than</option>
+              </select>
+              <input type="${subInput.parentType}" name="condType${subInput.serialNumber}" placeholder="Enter the matching answear..." value="${subInput.conditionAnswear || ""}" required data-validation-error="*Required">`;
+      } else {
+        conditionTemplate = "shiet";
+      }
+
       return `
-        <div class="input input__sub input__sub-${subInput.serialNumber.length}" data-serial="${subInput.serialNumber}">
+        <div class="input input__sub input__sub--${subInput.serialNumber.length}" data-serial="${subInput.serialNumber}">
 
 
         <!--
@@ -973,15 +998,7 @@ class Builder {
 
         <div class="input__condition">
         
-        Condition
-        <select required name="condType${subInput.serialNumber || ""}" data-val="${subInput.conditionType}">
-                <option value="input" ${subInput.conditionType === "input" ? "selected" : ""}>Text</option>
-                <option value="radio" ${subInput.conditionType === "radio" ? "selected" : ""}>Yes/No</option>
-                <option value="number" ${subInput.conditionType === "number" ? "selected" : ""}>Number</option>
-              </select>
-              <input type="${subInput.conditionType}" name="condType${subInput.serialNumber}" placeholder="Enter the matching answear..." value="${subInput.conditionAnswear || ""}" required data-validation-error="*Required">
-                <label for="condType${subInput.serialNumber}">Match: </label>
-          <span class="input__error" aria-live="polite"></span>
+          ${conditionTemplate}
 
         </div>
         
@@ -1064,6 +1081,7 @@ class Builder {
         // check if sub-input from actual state exists in previous state
         const isFound = matchesLast.some((arrEl2, i) => {
           if (arrEl1 === arrEl2) {
+            // found? not good... maybe next one?
             temp = matchesLast[i + 1];
             return true;
           } else {
@@ -1120,6 +1138,8 @@ class Builder {
     };
 
     const handleAddInput = (inputToAdd = {}) => {
+      debugger;
+      console.log('%%%');
       // copy the actual state of state
       let actualState = this.model.coreInputs.state.slice(); //👈👈
       // create new core input
@@ -1162,7 +1182,7 @@ class Builder {
               }, 700);
               const msg = element.dataset.validationError || "sth bad happened 🙆‍♀️";
               element.nextElementSibling.nextElementSibling.innerHTML = `${msg}`;
-              element.nextElementSibling.nextElementSibling.classList.add('util-active-block');
+              element.nextElementSibling.nextElementSibling.classList.add("util-active-block");
               freeToGo = false;
             }
           }
@@ -1184,138 +1204,256 @@ class Builder {
     };
 
     /* 🐱‍👤 EVENT HANDLERS 👤 */
+    // the problem is that whenever the whole component is rerendered, the constructor is run again, adding more and more event listeners 
+    // TODO: find out if self-memoizing function with flag set to false after first render is good enough approach
 
-    // handle adding new core question with 'add' btn
-    document.querySelector(".app").addEventListener("click", e => {
-      // e.preventDefault();
-      const btnAdd = e.target.matches(".btn--add");
-      if (btnAdd) {
-        handleAddInput();
-        this.persistState();
-      }
+    if (!this.initialized) {
 
-      const btnRemove = e.target.matches(".btn--remove");
-      if (btnRemove) {
-        const inputId = e.target.closest("div").dataset.id;
-        handleRemoveCoreInput(inputId);
-      }
+      // handle adding new core question with 'add' btn
+      document.querySelector(".app").addEventListener("click", e => {
+        e.stopPropagation();
+        e.preventDefault();
+        console.log(e);
+        console.log('app event!');
+        const btnAdd = e.target.matches(".btn--add");
+        if (btnAdd) {
+          handleAddInput();
+          this.persistState();
+        }
 
-      const btnAddSub = e.target.matches(".btn--add-sub");
-      if (btnAddSub) {
-        // const inputId = e.target.closest("div");
-        // inputId.insertAdjacentHTML("afterend", `<div> haloooooo</div>`);
-        handleAddSubInput(e);
-      }
+        const btnRemove = e.target.matches(".btn--remove");
+        if (btnRemove) {
+          const inputId = e.target.closest("div").dataset.id;
+          handleRemoveCoreInput(inputId);
+        }
 
-      const btnRemoveSub = e.target.matches(".btn--remove-sub");
+        const btnAddSub = e.target.matches(".btn--add-sub");
+        if (btnAddSub) {
+          handleAddSubInput(e);
+        }
 
-      if (btnRemoveSub) {
-        // 1. the the position of the subinput to delete
-        const position = e.target.closest("div").dataset.serial;
+        const btnRemoveSub = e.target.matches(".btn--remove-sub");
 
-        // 2. get its parent position, along with the location within it
-        const [parentPosition, indexToDelete] = Object(_app_util_util__WEBPACK_IMPORTED_MODULE_2__["splitExclusive"])(position)(position.lastIndexOf("."));
+        if (btnRemoveSub) {
+          // 1. the the position of the subinput to delete
+          const position = e.target.closest("div").dataset.serial;
 
-        // 3. the the core input to be updated
-        const coreInputId = e.target.closest(".input__core").dataset.id;
+          // 2. get its parent position, along with the location within it
+          const [parentPosition, indexToDelete] = Object(_app_util_util__WEBPACK_IMPORTED_MODULE_2__["splitExclusive"])(position)(position.lastIndexOf("."));
+
+          // 3. the the core input to be updated
+          const coreInputId = e.target.closest(".input__core").dataset.id;
+          const {
+            coreInput,
+            index
+          } = this.model.coreInputs.getCoreInputWithIndexById(coreInputId);
+
+          // 4. get the subToDelete parent to update
+          const parentToUpdate = _app_model_Inputs__WEBPACK_IMPORTED_MODULE_1___default.a.findInputByPosition(coreInput, parentPosition);
+
+          // 5. delete the sub basing on the data fetched before
+          parentToUpdate.subInputs.splice(indexToDelete, 1);
+
+          // 6. update state
+          let actualState = this.model.coreInputs.state.slice();
+          actualState[index] = coreInput;
+          this.setState(actualState);
+          this.persistState();
+        }
+      });
+
+      const updateCore = (e, input) => {
+        // get the actual input to update along its index in the state
+        const {
+          coreInput,
+          index
+        } = this.model.coreInputs.getCoreInputWithIndexById(input.dataset.id);
+
+        // get values from the inputs on the page
+        const [updatedInput, updatedType] = Object(_app_util_util__WEBPACK_IMPORTED_MODULE_2__["getInputValues"])(
+        // e.target.parentNode.children
+        // e.target.closest('div[data-id]')
+        // input
+        e.target.parentNode.parentNode.children);
+
+        // assign new values
+        coreInput.question = updatedInput;
+        coreInput.type = updatedType;
+
+        return { updatedCore: coreInput, index };
+      };
+
+      const updateSub = (e, subSerialNumber) => {
+        const coreInputId = e.target.closest("div[data-id]").dataset.id;
+
+        // get the actual input to update along its index in the state
         const {
           coreInput,
           index
         } = this.model.coreInputs.getCoreInputWithIndexById(coreInputId);
 
-        // 4. get the subToDelete parent to update
-        const parentToUpdate = _app_model_Inputs__WEBPACK_IMPORTED_MODULE_1___default.a.findInputByPosition(coreInput, parentPosition);
+        // get values from the inputs on the page
+        // const [condType, condAnswear, updatedInput, updatedType] = getInputValues(
+        const [...valuesFromUI] = Object(_app_util_util__WEBPACK_IMPORTED_MODULE_2__["getInputValues"])(e.target.parentNode.parentNode.children);
 
-        // 5. delete the sub basing on the data fetched before
-        parentToUpdate.subInputs.splice(indexToDelete, 1);
+        // update sub
+        const updatedCore = this.model.coreInputs.updateSub(coreInputId, subSerialNumber, valuesFromUI);
 
-        // 6. update state
-        let actualState = this.model.coreInputs.state.slice();
-        actualState[index] = coreInput;
-        this.setState(actualState);
-        this.persistState();
-      }
-    });
+        return { updatedCore, index };
+      };
 
-    const updateCore = (e, input) => {
-      // get the actual input to update along its index in the state
-      const {
-        coreInput,
-        index
-      } = this.model.coreInputs.getCoreInputWithIndexById(input.dataset.id);
+      // ideas for making this better for UX:
+      // - handling two different events separately: one for input (eg. focusout), one for select tag (like input) (caveat: the number of event handlers will grow with the new inputs type) ❌
+      // - try different events, and select one that fits best ❌
+      // throttle the function invocation ✔
+      const handleInputChange = e => {
+        console.log("TRIGGERED 😡😡😡");
 
-      // get values from the inputs on the page
-      const [updatedInput, updatedType] = Object(_app_util_util__WEBPACK_IMPORTED_MODULE_2__["getInputValues"])(
-      // e.target.parentNode.children
-      // e.target.closest('div[data-id]')
-      // input
-      e.target.parentNode.parentNode.children);
+        if (Object(_app_util_util__WEBPACK_IMPORTED_MODULE_2__["checkIfInput"])(e.target)) {
+          // copy the actual state of state
+          let actualState = this.model.coreInputs.state.slice(); //👈👈 is this a shallow copy? is it enough?
 
-      // assign new values
-      coreInput.question = updatedInput;
-      coreInput.type = updatedType;
+          // get the id id of the core input to be updated
+          const closestDiv = e.target.closest("div");
 
-      return { coreInput, index };
-    };
+          let sliceToUpdate = {};
 
-    const updateSub = (e, subSerialNumber) => {
-      const coreInputId = e.target.closest("div[data-id]").dataset.id;
+          // if closestInput el. id attr. exists => coreInput
+          // 😑🙄 TODO: i don't like the way it is hardcoded
+          if (closestDiv.parentNode.dataset.id) {
+            sliceToUpdate = updateCore(e, closestDiv.parentNode);
+          } else {
+            sliceToUpdate = updateSub(e, closestDiv.parentNode.dataset.serial);
+          }
 
-      // get the actual input to update along its index in the state
-      const {
-        coreInput,
-        index
-      } = this.model.coreInputs.getCoreInputWithIndexById(coreInputId);
+          actualState[sliceToUpdate.index] = sliceToUpdate.updatedCore;
 
-      // get values from the inputs on the page
-      // const [condType, condAnswear, updatedInput, updatedType] = getInputValues(
-      const [...valuesFromUI] = Object(_app_util_util__WEBPACK_IMPORTED_MODULE_2__["getInputValues"])(e.target.parentNode.parentNode.children);
+          // Two versions:
+          // 1. setState() commented => no real-time view/state update => data taken from localStorage every time
+          // 1. setState() uncommented => real-time view/state update => view rerender every state change
+          this.setState(actualState);
+          // TODO: use it to implement controlled input
 
-      // update sub
-      const updatedCore = this.model.coreInputs.updateSub(coreInputId, subSerialNumber, valuesFromUI);
+          this.persistState();
+        }
+      };
 
-      return { coreInput, index };
-    };
+      document.querySelector(".app").addEventListener("input", lodash__WEBPACK_IMPORTED_MODULE_0___default.a.debounce(handleInputChange, 200));
 
-    // ideas for making this better for UX:
-    // - handling two different events separately: one for input (eg. focusout), one for select tag (like input) (caveat: the number of event handlers will grow with the new inputs type) ❌
-    // - try different events, and select one that fits best ❌
-    // throttle the function invocation ✔
-    const handleInputChange = e => {
-      console.log("TRIGGERED 😡😡😡");
+      this.initialized = true;
+    }
+  }
+}
 
-      if (Object(_app_util_util__WEBPACK_IMPORTED_MODULE_2__["checkIfInput"])(e.target)) {
-        // copy the actual state of state
-        let actualState = this.model.coreInputs.state.slice(); //👈👈 is this a shallow copy? is it enough?
+/***/ }),
 
-        // get the id id of the core input to be updated
-        const closestDiv = e.target.closest("div");
+/***/ "./components/ExportView.js":
+/*!**********************************!*\
+  !*** ./components/ExportView.js ***!
+  \**********************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
-        let sliceToUpdate = {};
-        debugger;
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return ExportPreview; });
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js");
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_0__);
 
-        // if closestInput el. id attr. exists => coreInput
-        // 😑🙄 TODO: i don't like the way it is hardcoded
-        if (closestDiv.parentNode.dataset.id) {
-          sliceToUpdate = updateCore(e, closestDiv.parentNode);
-        } else {
-          sliceToUpdate = updateSub(e, closestDiv.parentNode.dataset.serial);
+
+class ExportPreview {
+    constructor() {
+        this.name = "export";
+        this.state = '';
+    }
+
+    getState() {
+        function parse(str) {
+            return lodash__WEBPACK_IMPORTED_MODULE_0___default.a.attempt(JSON.parse.bind(null, str));
         }
 
-        actualState[sliceToUpdate.index] = sliceToUpdate.coreInput;
+        this.state = parse(localStorage.getItem("form-builder"), 'hoho');
 
-        // Two versions:
-        // 1. setState() commented => no real-time view/state update => data taken from localStorage every time
-        // 1. setState() uncommented => real-time view/state update => view rerender every state change
-        this.setState(actualState);
-        // TODO: use it to implement controlled input
+        if (lodash__WEBPACK_IMPORTED_MODULE_0___default.a.isError(this.state)) {
+            this.state = [];
+        }
+    }
 
-        this.persistState();
-      }
-    };
+    render() {
+        debugger;
 
-    document.querySelector(".app").addEventListener("input", lodash__WEBPACK_IMPORTED_MODULE_0___default.a.debounce(handleInputChange, 200));
-  }
+        this.getState();
+        const html = `
+        <div class="preview">
+            <div class="big-black-box">
+                <h1> Tu bydzie cosik fajnego </h1>
+                <pre style="white-space: pre-wrap; word-break: keep-all;">
+                <code>
+                    ${JSON.stringify(this.state, undefined, 2)}
+                </code>
+                </pre>
+                </div>
+        </div>
+
+        
+        `;
+
+        return { html };
+    }
+}
+
+/***/ }),
+
+/***/ "./components/FormPreview.js":
+/*!***********************************!*\
+  !*** ./components/FormPreview.js ***!
+  \***********************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return FormPreview; });
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js");
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_0__);
+
+
+class FormPreview {
+    constructor() {
+        this.name = "preview";
+        this.state = '';
+    }
+
+    getState() {
+        function parse(str) {
+            return lodash__WEBPACK_IMPORTED_MODULE_0___default.a.attempt(JSON.parse.bind(null, str));
+        }
+
+        this.state = parse(localStorage.getItem("form-builder"), 'hoho');
+
+        if (lodash__WEBPACK_IMPORTED_MODULE_0___default.a.isError(this.state)) {
+            this.state = [];
+        }
+    }
+
+    render() {
+        debugger;
+
+        this.getState();
+
+        const html = `
+        <div class="export">
+            <div class="big-black-box">
+                <h1> Tu bydzie cosik fajnego </h1>
+                    
+                </div>
+        </div>
+
+        
+        `;
+
+        return { html };
+    }
 }
 
 /***/ }),
